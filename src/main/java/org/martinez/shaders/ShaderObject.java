@@ -14,6 +14,7 @@ public class ShaderObject {
     private int shader_program;
 
     public ShaderObject(String s, String l){ // this will still allocate memory no matter what
+
         if(EZFileRead.doesFileExist(s) && EZFileRead.doesFileExist(l)){
             System.out.println("about to call setupshaders");
             setupShaders(s, l);

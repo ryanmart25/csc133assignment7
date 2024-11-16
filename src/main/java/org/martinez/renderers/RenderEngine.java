@@ -39,11 +39,11 @@ public class RenderEngine{
     public RenderEngine(WindowManager manager, ShaderObject so){
         this.so = new ShaderObject("C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\shaders\\vs_0.glsl",
                 "C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\shaders\\fs_0.glsl");
-        so.useProgram();
+        initOpenGL();
         this.manager = manager;
         this.rows = 8;
         this.columns = 16;
-        initOpenGL(manager);
+
     }
     // methods
     private void setupPGP(){
@@ -69,17 +69,8 @@ public class RenderEngine{
         // number of bytes of data for position coordinates. They are floats, 4 bytes, 3 coordinates, 4 * 3 = 12. If this doesn't work, you need to figure out what the correct offset is
 
     }
-    private void initOpenGL(WindowManager manager){
-        // How much goes here?
-        manager.initGLFWWindow(Spot.win_width, Spot.win_height, Spot.TITLE);
-        manager.setCallKeyBacks();
-        manager.makeContextCurrent();
-        // setting up for PGP
-        // allocating and binding buffers
+    private void initOpenGL(){
         setupPGP();
-        // setting callbacks
-        manager.enableResizeWindowCallback();
-        manager.setMouseCallbacks();
         GL.createCapabilities();
     }
 
