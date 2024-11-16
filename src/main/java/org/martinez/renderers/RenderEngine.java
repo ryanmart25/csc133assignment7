@@ -4,6 +4,7 @@ package org.martinez.renderers;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL;
 
+import org.martinez.cameras.Camera;
 import org.martinez.listeners.KeyboardListener;
 import org.martinez.listeners.MouseListener;
 import org.martinez.managers.WindowManager;
@@ -37,12 +38,12 @@ public class RenderEngine{
     private FloatBuffer floatBuffer;
     // constructors
     public RenderEngine(WindowManager manager, ShaderObject so){
-        this.so = new ShaderObject("C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\shaders\\vs_0.glsl",
-                "C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\shaders\\fs_0.glsl");
-        initOpenGL();
+        this.so = so;
+
         this.manager = manager;
         this.rows = 8;
         this.columns = 16;
+        initOpenGL();
 
     }
     // methods
@@ -65,17 +66,21 @@ public class RenderEngine{
         glVertexAttribPointer(this.attributePointer0, this.positionStride, GL_FLOAT, false,this.vertexStride, 0 );
         glVertexAttribPointer(this.attributePointer1, this.textureStride, GL_FLOAT, false, this.vertexStride, 12);
         so.useProgram();
+        Camera camera = new Camera();
+        so.loadMatrix4f("uProjMatrix", camera.getprojectionMatrix());
+        so.loadMatrix4f("uViewMatrix", camera.getViewingMatrix());
         // this argument represents the offset, in bytes. it should be set the
         // number of bytes of data for position coordinates. They are floats, 4 bytes, 3 coordinates, 4 * 3 = 12. If this doesn't work, you need to figure out what the correct offset is
 
     }
     private void initOpenGL(){
+
+        //GL.createCapabilities();
         setupPGP();
-        GL.createCapabilities();
     }
 
     public void render(int framedelay) {
-        System.out.println("render() called");
+
         if(framedelay > 0){
             try {
                 Thread.sleep(framedelay);
@@ -84,5 +89,6 @@ public class RenderEngine{
             }
         }
     }
+
 }
 

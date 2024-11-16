@@ -2,6 +2,7 @@ package org.martinez.managers;
 
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
+import org.lwjgl.opengl.GL;
 import org.martinez.listeners.KeyboardListener;
 import org.martinez.listeners.MouseListener;
 import org.martinez.utils.Spot;
@@ -50,6 +51,7 @@ public class WindowManager { // singleton
         setCallKeyBacks();
         setMouseCallbacks();
         makeContextCurrent();
+        GL.createCapabilities();
     }
     private void setCallKeyBacks(){
         glfwSetKeyCallback(handle, KeyboardListener.keyCallback);
