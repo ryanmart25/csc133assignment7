@@ -7,6 +7,7 @@ import org.lwjgl.opengl.GL;
 import org.martinez.listeners.KeyboardListener;
 import org.martinez.listeners.MouseListener;
 import org.martinez.managers.WindowManager;
+import org.martinez.shaders.ShaderObject;
 import org.martinez.utils.Spot;
 
 import java.nio.FloatBuffer;
@@ -32,26 +33,29 @@ public class RenderEngine{
     private int positionStride;
     private int rows, columns;
     private WindowManager manager;
+    private ShaderObject so;
+    private FloatBuffer floatBuffer;
     // constructors
-    public RenderEngine(){
-        this.manager = WindowManager.getInstance();
+    public RenderEngine(WindowManager manager, ShaderObject so){
+        this.so = new ShaderObject("C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\shaders\\vs_0.glsl",
+                "C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\shaders\\fs_0.glsl");
+        so.useProgram();
+        this.manager = manager;
         this.rows = 8;
         this.columns = 16;
-
         initOpenGL(manager);
     }
     // methods
     private void setupPGP(){
-
          // allocate NIO array for Vertex data
-        float[] vertexes = new float[rows * columns * NUMBEROFFLOATINGPOINTNUMBERSPERPOLYGON];
-        FloatBuffer floatBuffer = BufferUtils.createFloatBuffer(vertexes.length);
-        floatBuffer.put(vertexes).flip();
+        float[] vertexes = new float[this.rows * this.columns * this.NUMBEROFFLOATINGPOINTNUMBERSPERPOLYGON];
+        this.floatBuffer = BufferUtils.createFloatBuffer(vertexes.length);
+        this.floatBuffer.put(vertexes).flip();
         this.VertexArrayObjectHandle = glGenVertexArrays();
-        glBindVertexArray(VertexArrayObjectHandle);
+        glBindVertexArray(this.VertexArrayObjectHandle);
         this.VertexBufferObjectHandle = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, VertexBufferObjectHandle);
-        // setting vertex attribute pointers // todo decide if i need these as fields or just locals
+        // setting vertex attribute pointers
         this.attributePointer0 = 0;
         this.attributePointer1 = 1;
         this.positionStride = 3;
@@ -60,26 +64,34 @@ public class RenderEngine{
         glBufferData(GL_ARRAY_BUFFER, floatBuffer, GL_STATIC_DRAW);
         glVertexAttribPointer(this.attributePointer0, this.positionStride, GL_FLOAT, false,this.vertexStride, 0 );
         glVertexAttribPointer(this.attributePointer1, this.textureStride, GL_FLOAT, false, this.vertexStride, 12);
+        so.useProgram();
         // this argument represents the offset, in bytes. it should be set the
         // number of bytes of data for position coordinates. They are floats, 4 bytes, 3 coordinates, 4 * 3 = 12. If this doesn't work, you need to figure out what the correct offset is
 
     }
-    public void initOpenGL(WindowManager manager){ // TODO need to add setup for PGP.
+    private void initOpenGL(WindowManager manager){
         // How much goes here?
-        long handle = manager.initGLFWWindow(Spot.win_width, Spot.win_height, Spot.TITLE);
-        glfwSetKeyCallback(handle, KeyboardListener.keyCallback);
-        glfwMakeContextCurrent(handle);
-
+        manager.initGLFWWindow(Spot.win_width, Spot.win_height, Spot.TITLE);
+        manager.setCallKeyBacks();
+        manager.makeContextCurrent();
         // setting up for PGP
         // allocating and binding buffers
         setupPGP();
-
         // setting callbacks
         manager.enableResizeWindowCallback();
-        glfwSetMouseButtonCallback(handle, MouseListener.mouseButtonCallback);
-        glfwSetCursorPosCallback(handle, MouseListener.cursorPosCallback);
+        manager.setMouseCallbacks();
         GL.createCapabilities();
     }
 
+    public void render(int framedelay) {
+        System.out.println("render() called");
+        if(framedelay > 0){
+            try {
+                Thread.sleep(framedelay);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 }
 

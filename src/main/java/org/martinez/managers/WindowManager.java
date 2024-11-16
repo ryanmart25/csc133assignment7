@@ -2,6 +2,9 @@ package org.martinez.managers;
 
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
+import org.martinez.listeners.KeyboardListener;
+import org.martinez.listeners.MouseListener;
+import org.martinez.utils.Spot;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -15,7 +18,8 @@ public class WindowManager { // singleton
     private long handle = -1;
     //constructors
     private WindowManager(){
-
+       initGLFWWindow(win_width, win_height, Spot.TITLE);
+       initOpenGL();
     }
     //methods
     public static WindowManager getInstance() {
@@ -24,7 +28,7 @@ public class WindowManager { // singleton
         }
         return instance;
     }
-    public long initGLFWWindow(int WIN_WIDTH, int WIN_HEIGHT, String title){
+    public void initGLFWWindow(int WIN_WIDTH, int WIN_HEIGHT, String title){
         if(handle == -1){
             GLFWErrorCallback.createPrint(System.err).set();
             if (!glfwInit()) {
@@ -39,12 +43,24 @@ public class WindowManager { // singleton
                 throw new RuntimeException("Failed to create GLFW window");
             }
             this.handle = h;
-            return this.handle;
         }
-        return this.handle;
     }
     // public void enableResizeWindowCallback(...)
-
+    private void initOpenGL(){
+        setCallKeyBacks();
+        setMouseCallbacks();
+        makeContextCurrent();
+    }
+    private void setCallKeyBacks(){
+        glfwSetKeyCallback(handle, KeyboardListener.keyCallback);
+    }
+    private void makeContextCurrent(){
+        glfwMakeContextCurrent(handle);
+    }
+    private void setMouseCallbacks(){
+        glfwSetMouseButtonCallback(handle, MouseListener.mouseButtonCallback);
+        glfwSetCursorPosCallback(handle, MouseListener.cursorPosCallback);
+    }
     public void swapBuffers(){
         if(this.handle == -1){
             throw new RuntimeException("Invalid window ID. Initialize Window before attempting to use it");
