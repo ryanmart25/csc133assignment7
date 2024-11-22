@@ -117,16 +117,54 @@ public class RenderEngine{
         manager.destroyGlfwWindow();
 
     }
-    private float[] createVertexArray(){
-        // defining 1 triangle.
+    private FloatBuffer createVertexArray(){
+        final float square_length = 0.5f;
+        final float z = 0.0f;
+
+        float x, y;
+        final float[] textureCoordinates = {
+                0.0f, 1.0f,
+                0.0f, 1.0f,
+                0.0f, 1.0f,
+                0.0f, 1.0f,
+                0.0f, 1.0f,
+                0.0f, 1.0f
+        };
+        final float[] RGBA = {
+                1.0f, 1.0f, 1.0f, 1.0f
+        };
+        FloatBuffer vertexes = BufferUtils.createFloatBuffer(rows * columns * 6 * 9);
+        // defining vertices for square.
         //          *
         //  *               *
-        float[] triangleVertices = {
-                // positions        // textures     // colors
-                0f,0f,0f,           0.0f,1.0f,       1.0f, 1.0f, 1.0f,1.0f,             // 0
-                100f,0f,0f,       0.0f,1.0f,       1.0f, 1.0f, 1.0f,1.0f,           // 1
-                50f, 50f, 0f,    0.0f,1.0f,        1.0f, 1.0f, 1.0f, 1.0f           // 2
-        };
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < columns; col++) {
+                x = col * square_length;
+                y = row * square_length;
+                float[] vertexPositions = { // define a generic square and then translate it later
+                        // triangle 1
+                        // bottom left
+                        x, y , z,
+                        // bottom right
+                        x + square_length, y, z,
+                        // top left
+                        x, y + square_length, z,
+                        // triangle 2
+                        // top left
+                        x, y + square_length, z,
+                        // bottom right
+                        x + square_length, y, z,
+                        // top right
+                        x + square_length, y + square_length, z
+                };
+                for (int i = 0; i < 6; i++) {
+                    vertexes.put(vertexPositions, i * 3, 3);
+                    vertexes.put(textureCoordinates, i * 2, 2);
+                    vertexes.put(RGBA);
+                }
+            }
+        }
+
          // generate centerpoints
         float[][][] centerpoints = new float[rows][columns][3];
         float[] vertexes = new float[rows * columns * 4 * 9];
