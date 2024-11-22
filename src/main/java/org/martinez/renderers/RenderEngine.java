@@ -12,11 +12,13 @@ import org.martinez.shaders.ShaderObject;
 import org.martinez.utils.Spot;
 
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 import static java.lang.Thread.sleep;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
@@ -38,6 +40,8 @@ public class RenderEngine{
     private ShaderObject so;
     private FloatBuffer floatBuffer;
     private float radius;
+    private int colorStride;
+    private int attributePointer2;
 
     // constructors
     public RenderEngine(WindowManager manager, ShaderObject so){
@@ -49,11 +53,17 @@ public class RenderEngine{
     }
     // methods
     private void setupPGP(){
+        so.useProgram();
+        Camera camera = new Camera();
+        so.loadMatrix4f("uProjMatrix", camera.getprojectionMatrix());
+        so.loadMatrix4f("uViewMatrix", camera.getViewingMatrix());
          // allocate NIO array for Vertex data
          this.positionStride = 3;
          this.textureStride = 2;
-         this.vertexStride = 5;
-        float[] vertexes = generateVertices();
+         this.colorStride = 4;
+         this.vertexStride = (this.positionStride + this.textureStride + this.colorStride) * 4;
+        float[] vertexes = createVertexArray();
+        int[] elements = elementArray();
         this.floatBuffer = BufferUtils.createFloatBuffer(vertexes.length);
         this.floatBuffer.put(vertexes).flip();
         this.VertexArrayObjectHandle = glGenVertexArrays();
@@ -63,14 +73,23 @@ public class RenderEngine{
         // setting vertex attribute pointers
         this.attributePointer0 = 0;
         this.attributePointer1 = 1;
-
+        this.attributePointer2 = 2;
         glBufferData(GL_ARRAY_BUFFER, floatBuffer, GL_STATIC_DRAW);
+
         glVertexAttribPointer(this.attributePointer0, this.positionStride, GL_FLOAT, false,this.vertexStride, 0 );
+        glEnableVertexAttribArray(this.attributePointer0);
         glVertexAttribPointer(this.attributePointer1, this.textureStride, GL_FLOAT, false, this.vertexStride, 12);
-        so.useProgram();
-        Camera camera = new Camera();
-        so.loadMatrix4f("uProjMatrix", camera.getprojectionMatrix());
-        so.loadMatrix4f("uViewMatrix", camera.getViewingMatrix());
+        glEnableVertexAttribArray(this.attributePointer1);
+        glVertexAttribPointer(this.attributePointer2,this.colorStride, GL_FLOAT, false, this.vertexStride, 20);
+        glEnableVertexAttribArray(this.attributePointer2);
+
+        IntBuffer elementBuffer = BufferUtils.createIntBuffer(elements.length);
+        elementBuffer.put(elements).flip();
+        int eboID = glGenBuffers();
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL_STATIC_DRAW);
+        glDrawElements(GL_TRIANGLES, elements.length, GL_UNSIGNED_INT, 0);
+
         // this argument represents the offset, in bytes. it should be set the
         // number of bytes of data for position coordinates. They are floats, 4 bytes, 3 coordinates, 4 * 3 = 12. If this doesn't work, you need to figure out what the correct offset is
 
@@ -96,15 +115,25 @@ public class RenderEngine{
         manager.destroyGlfwWindow();
 
     }
-    private float[] generateVertices(){
+    private float[] createVertexArray(){
         // defining 1 triangle.
+        //          *
+        //  *               *
         float[] triangleVertices = {
-                0f,0f,0f,0.0f,1.0f,
-                0.5f,0.0f,0f,0.0f,1.0f,
-                0.25f, 0.5f, 0f,0.0f,1.0f
+                // positions        // textures     // colors
+                0f,0f,0f,           0.0f,1.0f,       1.0f, 1.0f, 1.0f,1.0f,             // 0
+                100f,0f,0f,       0.0f,1.0f,       1.0f, 1.0f, 1.0f,1.0f,           // 1
+                50f, 50f, 0f,    0.0f,1.0f,        1.0f, 1.0f, 1.0f, 1.0f           // 2
         };
         return triangleVertices;
     }
+    private int[] elementArray(){ // counterclockwise
+        int[] elementArray = {
+                1,2,0
+        };
+        return elementArray;
+    }
+/*
     private float[][][] generateROWCOLCenterPoints(int rows, int columns){
         float[][][] centerpoints = new float[rows][columns][2];
         float prospective1, prospective2;
@@ -124,7 +153,7 @@ public class RenderEngine{
             }
         }
         return centerpoints;
-        //generatePolygons();
+        generatePolygons();
     }
     private float[] generateVertices(float[][][] centerpoints){
         float[] positionCoordinates = new float[rows * columns * vertexStride * NUMVERTEXESPERQUAD];
@@ -152,7 +181,8 @@ public class RenderEngine{
         return new float[][][];
 
     }
-    private void setRADIUS(float radius) {
+*/
+private void setRADIUS(float radius) {
         this.radius = radius;
     }
 }
