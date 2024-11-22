@@ -1,6 +1,7 @@
 package org.martinez.renderers;
 
 
+import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL;
 
@@ -42,10 +43,15 @@ public class RenderEngine{
     private float radius = Spot.RADIUS;
     private int colorStride;
     private int attributePointer2;
-    private int elementsLength = elementArray().length;
+    private IntBuffer elementBuffer;
+    private Camera camera;
+    private IntBuffer VertexIndicesBuffer;
+    private int eboID;
+
     // constructors
-    public RenderEngine(WindowManager manager, ShaderObject so){
+    public RenderEngine(WindowManager manager, ShaderObject so, Camera camera){
         this.so = so;
+        this.camera = camera;
         this.manager = manager;
         this.rows = Spot.ROWS;
         this.columns = Spot.COLUMNS;
@@ -54,7 +60,7 @@ public class RenderEngine{
     // methods
     private void setupPGP(){
         so.useProgram();
-        Camera camera = new Camera();
+
         so.loadMatrix4f("uProjMatrix", camera.getprojectionMatrix());
         so.loadMatrix4f("uViewMatrix", camera.getViewingMatrix());
          // allocate NIO array for Vertex data
@@ -62,10 +68,8 @@ public class RenderEngine{
          this.textureStride = 2;
          this.colorStride = 4;
          this.vertexStride = (this.positionStride + this.textureStride + this.colorStride) * 4;
-        float[] vertexes = createVertexArray();
-        int[] elements = elementArray();
-        this.floatBuffer = BufferUtils.createFloatBuffer(vertexes.length);
-        this.floatBuffer.put(vertexes).flip();
+        createVertexArray();
+
         this.VertexArrayObjectHandle = glGenVertexArrays();
         glBindVertexArray(this.VertexArrayObjectHandle);
         this.VertexBufferObjectHandle = glGenBuffers();
@@ -83,12 +87,6 @@ public class RenderEngine{
         glVertexAttribPointer(this.attributePointer2,this.colorStride, GL_FLOAT, false, this.vertexStride, 20);
         glEnableVertexAttribArray(this.attributePointer2);
 
-        IntBuffer elementBuffer = BufferUtils.createIntBuffer(elements.length);
-        elementBuffer.put(elements).flip();
-        int eboID = glGenBuffers();
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL_STATIC_DRAW);
-
         // this argument represents the offset, in bytes. it should be set the
         // number of bytes of data for position coordinates. They are floats, 4 bytes, 3 coordinates, 4 * 3 = 12. If this doesn't work, you need to figure out what the correct offset is
 
@@ -99,11 +97,19 @@ public class RenderEngine{
     }
 
     public void render(int framedelay) {
+        Vector4f COLOR_FACTOR = new Vector4f(0.2f, 0.4f, 0.6f, 1.0f);
         while(!manager.isGlfwWindowClosed()){
             glfwPollEvents();
+            glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
-
-            glDrawElements(GL_TRIANGLES, this.elementsLength, GL_UNSIGNED_INT, 0);
+            so.loadMatrix4f("uProjMatrix", this.camera.getprojectionMatrix());
+            so.loadMatrix4f("UViewMatrix", this.camera.getViewingMatrix());
+            for (int row = 0; row < rows; row++) {
+                for (int column = 0; column < columns; column++) {
+                    so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
+                    renderTile(row, column);
+                }
+            }
             manager.swapBuffers();
 
             if(framedelay > 0){
@@ -117,8 +123,25 @@ public class RenderEngine{
         manager.destroyGlfwWindow();
 
     }
-    private FloatBuffer createVertexArray(){
-        final float square_length = 0.5f;
+    public void renderTile(int row, int col) {
+// Compute the vertexArray offset
+        int va_offset = getVAVIndex(row, col); // vertex array offset of tile
+        int[] rgVertexIndices = new int[] {va_offset, va_offset+1, va_offset+2,
+                va_offset, va_offset+2, va_offset+3};
+        VertexIndicesBuffer = BufferUtils.createIntBuffer(rgVertexIndices.length);
+        VertexIndicesBuffer.put(rgVertexIndices).flip();
+        this.eboID = glGenBuffers();
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, VertexIndicesBuffer, GL_STATIC_DRAW);
+        glDrawElements(GL_TRIANGLES, rgVertexIndices.length, GL_UNSIGNED_INT, 0);
+    }
+
+    private int getVAVIndex(int row, int col) {
+        return (row * columns + col); // todo figure out what vpt is
+    }
+
+    private void createVertexArray(){
+        final float square_length = 0.1f;
         final float z = 0.0f;
 
         float x, y;
@@ -131,17 +154,17 @@ public class RenderEngine{
                 0.0f, 1.0f
         };
         final float[] RGBA = {
-                1.0f, 1.0f, 1.0f, 1.0f
+                1.0f, 1.0f,     1.0f, 1.0f,
         };
-        FloatBuffer vertexes = BufferUtils.createFloatBuffer(rows * columns * 6 * 9);
+        this.floatBuffer = BufferUtils.createFloatBuffer(rows * columns * 6 * 9);
         // defining vertices for square.
         //          *
         //  *               *
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < columns; col++) {
-                x = col * square_length;
+                x = col * square_length; // translate x and y based on which row, col we are one, in addition to the length of the square. TODO figure out how to add padding
                 y = row * square_length;
-                float[] vertexPositions = { // define a generic square and then translate it later
+                float[] vertexPositions = { // define a generic square and then translate it
                         // triangle 1
                         // bottom left
                         x, y , z,
@@ -157,110 +180,36 @@ public class RenderEngine{
                         // top right
                         x + square_length, y + square_length, z
                 };
-                for (int i = 0; i < 6; i++) {
-                    vertexes.put(vertexPositions, i * 3, 3);
-                    vertexes.put(textureCoordinates, i * 2, 2);
-                    vertexes.put(RGBA);
+                for (int i = 0; i < 6; i++) {   // put vertex data, interleaved
+                    this.floatBuffer.put(vertexPositions, i * 3, 3);
+                    this.floatBuffer.put(textureCoordinates, i * 2, 2);
+                    this.floatBuffer.put(RGBA);
                 }
             }
         }
-
-         // generate centerpoints
-        float[][][] centerpoints = new float[rows][columns][3];
-        float[] vertexes = new float[rows * columns * 4 * 9];
-        final float zCoord = 1.0f;
-        final float uVMin = 0.0f;
-        final float uVMax = 1.0f;
-        final float RED = 1.0f;
-        final float GREEN = 1.0f;
-        final float BLUE = 1.0f;
-        final float ALPHA = 1.0f;
-        float prospective1, prospective2;
-        prospective1 = (1.0f / rows);
-        prospective2 = (1.0f) / columns;
-        float radius = Math.min(prospective1, prospective2);
-        setRADIUS(radius);
-        float initialX = -1.0f + radius;
-        float initialY = 1.0f - radius;
-        float offset = 2.0f * radius;
-        for (int row = 0; row < rows; row++){ // generate centerpoint components
-            for (int col = 0; col < columns; col++){
-                centerpoints[row][col][0] = initialX + (col * offset);
-                centerpoints[row][col][1] = initialY - (row * offset);
-                centerpoints[row][col][2] = zCoord;
-                // generate box vertexes
-                //  *2       * 1
-                //
-                //  *3       * 0
-                // positions
-                // triangle 1
-                float Vertex2Y = centerpoints[row][col][1] - radius;
-                float Vertex2X = centerpoints[row][col][0] - radius; // bottom left 0
-                float Vertex3X = centerpoints[row][col][0] + radius;
-                float Vertex3Y = centerpoints[row][col][1] - radius;// bottom right 1
-                float Vertex1X = centerpoints[row][col][0] - radius;
-                float Vertex1Y = centerpoints[row][col][1] + radius; // top left 2
-                for (int i = 0; i < 3; i++) { // for each vertex in a triangle
-                    vertexes[i] = Vertex2X;
-                    //vertexes[]
-                }
-                // triangle 2
-                // insert top left 2
-                // insert bottom right 1
-                float Vertex0X = centerpoints[row][col][0] + radius;
-                float Vertex0Y = centerpoints[row][col][1] + radius; // top right 5
-
-
-                // put vertex data (position, texture, color) into array
-                // vertex 0
-                vertexes[col] = Vertex0X;
-                vertexes[col + 1] = Vertex0Y;
-                vertexes[col + 2] = zCoord;
-                vertexes[col + 3] = uVMin;
-                vertexes[col + 4] = uVMax;
-                vertexes[col + 5] = RED;
-                vertexes[col + 6] = GREEN;
-                vertexes[col + 7] = BLUE;
-                vertexes[col + 8] = ALPHA;
-                // vertex 1
-                vertexes[col+ 10] = Vertex1X;
-                vertexes[col + 11] = Vertex1Y;
-                vertexes[col + 12] = zCoord;
-                vertexes[col + 13] = uVMin;
-                vertexes[col + 14] = uVMax;
-                vertexes[col + 15] = RED;
-                vertexes[col + 16] = GREEN;
-                vertexes[col + 17] = BLUE;
-                vertexes[col + 18] = ALPHA;
-                // vertex 2
-                vertexes[col+ 19] = Vertex2X;
-                vertexes[col + 20] = Vertex2Y;
-                vertexes[col + 21] = zCoord;
-                vertexes[col + 22] = uVMin;
-                vertexes[col + 23] = uVMax;
-                vertexes[col + 24] = RED;
-                vertexes[col + 25] = GREEN;
-                vertexes[col + 26] = BLUE;
-                vertexes[col + 27] = ALPHA;
-                // vertex 3
-                vertexes[col+ 28] = Vertex3X;
-                vertexes[col + 29] = Vertex3Y;
-                vertexes[col + 30] = zCoord;
-                vertexes[col + 31] = uVMin;
-                vertexes[col + 32] = uVMax;
-                vertexes[col + 33] = RED;
-                vertexes[col + 34] = GREEN;
-                vertexes[col + 35] = BLUE;
-                vertexes[col + 36] = ALPHA;
-            }
-        }
-        return triangleVertices;
+        this.floatBuffer.flip();
     }
-    private int[] elementArray(){ // counterclockwise
-        int[] elementArray = {
-                1,2,0
-        };
-        return elementArray;
+    private void elementArray(){ // counterclockwise order
+        this.elementBuffer = BufferUtils.createIntBuffer(rows * columns * 6 * 9);
+
+        for (int row = 0; row < rows; row++) {
+            for (int column = 0; column < columns; column++) { // for each square
+                int bottomLeft = row * (columns + 1) + column;
+                int bottomRight = bottomLeft + 1;
+                int topLeft = bottomLeft + (columns + 1);
+                int topRight = topLeft + 1;
+                elementBuffer.put(bottomLeft);
+                elementBuffer.put(bottomRight);
+                elementBuffer.put(topRight);
+                elementBuffer.put(bottomLeft);
+                elementBuffer.put(topRight);
+                elementBuffer.put(topLeft);
+            }
+        }
+        elementBuffer.flip();
+        // 2  * 3   * 5
+        //
+        //  0 *   1 * 4
     }
 /*
     private float[][][] generateROWCOLCenterPoints(int rows, int columns){

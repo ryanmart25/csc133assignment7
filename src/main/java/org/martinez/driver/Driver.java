@@ -1,5 +1,6 @@
 package org.martinez.driver;
 
+import org.martinez.cameras.Camera;
 import org.martinez.managers.WindowManager;
 import org.martinez.renderers.RenderEngine;
 import org.martinez.shaders.ShaderObject;
@@ -9,9 +10,10 @@ public class Driver {
     public static void main(String[] args) {
         System.out.println("starting");
         WindowManager manager = WindowManager.getInstance();
+        Camera camera = new Camera();
         ShaderObject shaderObject = new ShaderObject("C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\shaders\\fs_texture_1.glsl",
                 "C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\shaders\\vs_texture_1.glsl");
-        RenderEngine engine = new RenderEngine(manager,shaderObject);
+        RenderEngine engine = new RenderEngine(manager,shaderObject, camera);
         engine.render(Spot.FRAME_DELAY);
     }
 }
