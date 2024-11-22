@@ -8,4 +8,7 @@ public class Spot {
     public static final int FRAME_DELAY = 200;
     public static int win_width = 500;
     public static int win_height = 500;
+    public static final int ROWS = 8; public static final int COLUMNS = 8;
+    public static float RADIUS = 0.5f;
+
 }
