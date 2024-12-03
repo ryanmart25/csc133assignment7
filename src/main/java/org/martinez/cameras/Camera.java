@@ -13,7 +13,7 @@ public class Camera {
     public Matrix4f getprojectionMatrix(){
         Matrix4f projmatrix = new Matrix4f();
         projmatrix.identity();
-        projmatrix.ortho(0.0f, Spot.win_width, 0.0f, Spot.win_height, 0.0f, 100.0f);
+        projmatrix.ortho(0.0f, (float)Spot.win_width, 0.0f, (float)Spot.win_height, 0.0f, 100.0f);
         return projmatrix;
     }
     public Matrix4f getViewingMatrix(){

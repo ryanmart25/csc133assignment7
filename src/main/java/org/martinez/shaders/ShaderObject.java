@@ -17,6 +17,8 @@ public class ShaderObject {
 
         if(EZFileRead.doesFileExist(s) && EZFileRead.doesFileExist(l)){
             setupShaders(s,l);
+        }else{
+            throw new RuntimeException("ShaderObject.java: One or both files do not exist.");
         }
     }
     private void setupShaders(String vertexShaderFilename, String fragmentShaderFilename){
@@ -53,7 +55,7 @@ public class ShaderObject {
     } // public void loadMatrix4f(...)
     public void loadVector4f(String strVec4Name, Vector4f my_vec4) {
         int var_location = glGetUniformLocation(this.shader_program, strVec4Name);
-        int OGL_VEC4_SIZE = 16;
+        int OGL_VEC4_SIZE = 4;
         FloatBuffer vec4Buffer = BufferUtils.createFloatBuffer(OGL_VEC4_SIZE);
         my_vec4.get(vec4Buffer);
         glUniform4fv(var_location, vec4Buffer);
