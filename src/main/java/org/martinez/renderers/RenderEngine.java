@@ -3,17 +3,16 @@ package org.martinez.renderers;
 
 import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL;
 
 import org.martinez.cameras.Camera;
-import org.martinez.listeners.KeyboardListener;
-import org.martinez.listeners.MouseListener;
+import org.martinez.helper.ArrayWrapper;
 import org.martinez.managers.WindowManager;
 import org.martinez.shaders.ShaderObject;
 import org.martinez.utils.Spot;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
 
 import static java.lang.Thread.sleep;
 import static org.lwjgl.glfw.GLFW.*;
@@ -60,14 +59,15 @@ public class RenderEngine{
     // methods
     private void setupPGP(){
         so.useProgram();
+        // todo remove color component of vertexes
 
         so.loadMatrix4f("uProjMatrix", camera.getprojectionMatrix());
         so.loadMatrix4f("uViewMatrix", camera.getViewingMatrix());
          // allocate NIO array for Vertex data
          this.positionStride = 3;
          this.textureStride = 2;
-         this.colorStride = 4;
-         this.vertexStride = (this.positionStride + this.textureStride + this.colorStride) * 4;
+         //this.colorStride = 4;
+         this.vertexStride = (this.positionStride + this.textureStride) * 4;
         createVertexArray();
 
         this.VertexArrayObjectHandle = glGenVertexArrays();
@@ -77,16 +77,12 @@ public class RenderEngine{
         // setting vertex attribute pointers
         this.attributePointer0 = 0;
         this.attributePointer1 = 1;
-        this.attributePointer2 = 2;
         glBufferData(GL_ARRAY_BUFFER, floatBuffer, GL_STATIC_DRAW);
 
         glVertexAttribPointer(this.attributePointer0, this.positionStride, GL_FLOAT, false,this.vertexStride, 0 );
         glEnableVertexAttribArray(this.attributePointer0);
         glVertexAttribPointer(this.attributePointer1, this.textureStride, GL_FLOAT, false, this.vertexStride, 12);
         glEnableVertexAttribArray(this.attributePointer1);
-        glVertexAttribPointer(this.attributePointer2,this.colorStride, GL_FLOAT, false, this.vertexStride, 20);
-        glEnableVertexAttribArray(this.attributePointer2);
-
         // this argument represents the offset, in bytes. it should be set the
         // number of bytes of data for position coordinates. They are floats, 4 bytes, 3 coordinates, 4 * 3 = 12. If this doesn't work, you need to figure out what the correct offset is
 
@@ -98,12 +94,12 @@ public class RenderEngine{
 
     public void render(int framedelay) {
         Vector4f COLOR_FACTOR = new Vector4f(0.2f, 0.4f, 0.6f, 1.0f);
+        so.loadMatrix4f("uProjMatrix", this.camera.getprojectionMatrix());
+        so.loadMatrix4f("UViewMatrix", this.camera.getViewingMatrix());
         while(!manager.isGlfwWindowClosed()){
             glfwPollEvents();
             glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
-            so.loadMatrix4f("uProjMatrix", this.camera.getprojectionMatrix());
-            so.loadMatrix4f("UViewMatrix", this.camera.getViewingMatrix());
             for (int row = 0; row < rows; row++) {
                 for (int column = 0; column < columns; column++) {
                     so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
@@ -137,26 +133,20 @@ public class RenderEngine{
     }
 
     private int getVAVIndex(int row, int col) {
-        return (row * columns + col); // todo figure out what vpt is
+        return (row * columns + col) * 4; // todo figure out what vpt is
     }
 
-    private void createVertexArray(){
+    private void createVertexArray(){ // todo, put vertexes in a standard array, then insert the array into the floatbuffer
+        ArrayWrapper wrapper = new ArrayWrapper(rows * columns * 4 * 5); // todo refactor magic number
         final float square_length = 0.1f;
         final float z = 0.0f;
 
         float x, y;
         final float[] textureCoordinates = {
-                0.0f, 1.0f,
-                0.0f, 1.0f,
-                0.0f, 1.0f,
-                0.0f, 1.0f,
-                0.0f, 1.0f,
                 0.0f, 1.0f
         };
-        final float[] RGBA = {
-                1.0f, 1.0f,     1.0f, 1.0f,
-        };
-        this.floatBuffer = BufferUtils.createFloatBuffer(rows * columns * 6 * 9);
+
+        this.floatBuffer = BufferUtils.createFloatBuffer(rows * columns * 4 * 5); // todo refactor magic number
         // defining vertices for square.
         //          *
         //  *               *
@@ -180,13 +170,21 @@ public class RenderEngine{
                         // top right
                         x + square_length, y + square_length, z
                 };
-                for (int i = 0; i < 6; i++) {   // put vertex data, interleaved
-                    this.floatBuffer.put(vertexPositions, i * 3, 3);
-                    this.floatBuffer.put(textureCoordinates, i * 2, 2);
-                    this.floatBuffer.put(RGBA);
+                for (int i = 0; i < 18; i+=3) {   // put 4 vertices, data is interleaved
+                    // insert a vertex
+                        // position data. input i -> i + 2: position components of one vertex. i is used as an offset to look into vertexPositions
+                        //
+                    wrapper.append(vertexPositions[i]);
+                    wrapper.append(vertexPositions[i + 1]);
+                    wrapper.append(vertexPositions[ i + 2]);
+                        //texture data
+                    wrapper.append(textureCoordinates[0]);
+                    wrapper.append(textureCoordinates[1]);
                 }
             }
         }
+        this.floatBuffer.put(wrapper.getArray());
+
         this.floatBuffer.flip();
     }
     private void elementArray(){ // counterclockwise order
@@ -206,6 +204,7 @@ public class RenderEngine{
                 elementBuffer.put(topLeft);
             }
         }
+
         elementBuffer.flip();
         // 2  * 3   * 5
         //
