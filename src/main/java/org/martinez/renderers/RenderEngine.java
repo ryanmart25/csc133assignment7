@@ -105,12 +105,12 @@ public class RenderEngine{
         while(!manager.isGlfwWindowClosed()){
 
             glfwPollEvents();
-            glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
             for (int row = 0; row < rows; row++) {
                 for (int column = 0; column < columns; column++) {
-                    COLOR_FACTOR = new Vector4f(random.nextFloat(), random.nextFloat(), random.nextFloat(), random.nextFloat());
+
                     so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
                     renderTile(row, column);
                 }
@@ -150,8 +150,9 @@ public class RenderEngine{
         final int floatspervertex = 5;
         Array floatarray = new Array(rows * columns * verticespertile * floatspervertex);
         final float square_length = 100f;
+        float padding = 10f;
         final float z = 0.0f;
-        float x, y;
+        float x , y ;
 
         final float[] textureCoordinates = { // todo this can be shrunken to 2 entries, with .put(textureCoordinates,i, 2) replacing line 194
                 0.0f, 1.0f,
@@ -165,9 +166,12 @@ public class RenderEngine{
 
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < columns; col++) {
-                float padding = 10f;
-                x =    (col * square_length) ; // translate x and y based on which row, col we are on, in addition to the length of the square. TODO figure out how to add padding
-                y =    (row * square_length) ;
+
+                x =    col * (square_length + padding) + padding; // translate x and y based on which row, col we are on, in addition to the length of the square. TODO figure out how to add padding
+                y =    row * (square_length + padding) + padding;
+                if(x + square_length > Spot.win_width || y + square_length > Spot.win_height){
+                    continue;
+                }
                 float[] vertexPositions = { // define a generic square and then translate it
 
                         // bottom right
