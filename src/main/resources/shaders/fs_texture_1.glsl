@@ -9,4 +9,3 @@ void main()
 {
     color = COLOR_FACTOR ;
 }
-w

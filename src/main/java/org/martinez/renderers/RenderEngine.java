@@ -67,7 +67,7 @@ public class RenderEngine{
          this.textureStride = 2;
          this.vertexStride = (this.positionStride + this.textureStride ) * 4;
         createVertexArray();
-//        mockvertexarray();
+
         this.VertexArrayObjectHandle = glGenVertexArrays();
         glBindVertexArray(this.VertexArrayObjectHandle);
         this.VertexBufferObjectHandle = glGenBuffers();
@@ -75,13 +75,12 @@ public class RenderEngine{
         // setting vertex attribute pointers
         this.attributePointer0 = 0;
         this.attributePointer1 = 1;
-        //this.attributePointer2 = 2;
-
 
         glVertexAttribPointer(this.attributePointer0, this.positionStride, GL_FLOAT, false,this.vertexStride, 0 );
         glEnableVertexAttribArray(this.attributePointer0);
         glVertexAttribPointer(this.attributePointer1, this.textureStride, GL_FLOAT, false, this.vertexStride, (long)positionStride * Float.BYTES);
-        glEnableVertexAttribArray(this.attributePointer1);glBufferData(GL_ARRAY_BUFFER, floatBuffer, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(this.attributePointer1);
+        glBufferData(GL_ARRAY_BUFFER, floatBuffer, GL_STATIC_DRAW);
         so.useProgram();
         so.loadMatrix4f("uProjMatrix", camera.getprojectionMatrix());
         so.loadMatrix4f("uViewMatrix", camera.getViewingMatrix());
@@ -133,7 +132,6 @@ public class RenderEngine{
                 va_offset, va_offset+2, va_offset+3};
         VertexIndicesBuffer = BufferUtils.createIntBuffer(rgVertexIndices.length);
         VertexIndicesBuffer.put(rgVertexIndices).flip();
-//        mockelementArray();
         this.eboID = glGenBuffers();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, VertexIndicesBuffer, GL_STATIC_DRAW);
@@ -141,14 +139,14 @@ public class RenderEngine{
     }
 
     private int getVAVIndex(int row, int col) {
-        return (row * columns + col) * 4; // todo figure out what vpt is
+        return (row * columns + col) * 4;
     }
 
     private void createVertexArray(){
-        final int verticespertile = 6;
+        final int verticespertile = 4;
         final int floatspervertex = 5;
         Array floatarray = new Array(rows * columns * verticespertile * floatspervertex);
-        final float square_length = 10f;
+        final float square_length = 0.03f;
         final float z = 0.0f;
         float x, y;
 
@@ -189,8 +187,8 @@ public class RenderEngine{
                 //        " Vertex 2, top left: "+ vertexPositions[6] + ","+ vertexPositions[7]+ ","+ vertexPositions[8] +
                 //        " Vertex 5, top right:"+ vertexPositions[9] + ","+ vertexPositions[10]+ ","+ vertexPositions[11]+"\n");
                 for (int i = 0; i < vertexPositions.length; i++) {
-                    floatarray.append(vertexPositions[i]);
-                    if( i == 2 || i == 5 || i == 8 || i == 11){
+                    floatarray.append(vertexPositions[i]); // append positions
+                    if( i == 2 || i == 5 || i == 8 || i == 11){ // append textures 
                         floatarray.append(textureCoordinates[0]);
                         floatarray.append(textureCoordinates[1]);
                     }
