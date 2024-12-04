@@ -154,12 +154,7 @@ public class RenderEngine{
         final float z = 0.0f;
         float x , y ;
 
-        final float[] textureCoordinates = { // todo this can be shrunken to 2 entries, with .put(textureCoordinates,i, 2) replacing line 194
-                0.0f, 1.0f,
-                0.0f, 1.0f,
-                0.0f, 1.0f,
-                0.0f, 1.0f,
-                0.0f, 1.0f,
+        final float[] textureCoordinates = {
                 0.0f, 1.0f
         };
         this.floatBuffer = BufferUtils.createFloatBuffer(rows * columns * verticespertile * floatspervertex);
@@ -167,7 +162,7 @@ public class RenderEngine{
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < columns; col++) {
 
-                x =    col * (square_length + padding) + padding; // translate x and y based on which row, col we are on, in addition to the length of the square. TODO figure out how to add padding
+                x =    col * (square_length + padding) + padding; // translate x and y based on which row, col we are on, in addition to the length of the square.
                 y =    row * (square_length + padding) + padding;
                 if(x + square_length > Spot.win_width || y + square_length > Spot.win_height){
                     continue;
