@@ -146,7 +146,7 @@ public class RenderEngine{
         final int verticespertile = 4;
         final int floatspervertex = 5;
         Array floatarray = new Array(rows * columns * verticespertile * floatspervertex);
-        final float square_length = 0.03f;
+        final float square_length = 50f;
         final float z = 0.0f;
         float x, y;
 
@@ -166,20 +166,21 @@ public class RenderEngine{
                 x =    (col * square_length); // translate x and y based on which row, col we are one, in addition to the length of the square. TODO figure out how to add padding
                 y =    (row * square_length);
                 float[] vertexPositions = { // define a generic square and then translate it
-                        // triangle 1
-                        // bottom left
-                        x, y , z,
-//                        / bottom right
+
+                        // bottom right
                         (x + square_length), y, z,
-//                        / top left
+                        //top right
+                        (x + square_length), y + square_length, z,
+                        // top left
                         x, y + square_length, z,
-//                        / triangle 2
-//                        / top left
-                        //x, y + square_length, z,
-//                        / bottom right
+                        // bottom left
+                        x, y , z
+
+                        // top left
+                        // x, y + square_length, z,
+                        // bottom right
                         //(x + square_length), y, z,
-//                        / top right
-                        (x + square_length), y + square_length, z
+
                 };
                 //System.out.println("====Box====");
                 //System.out.print("Triangle 1:\nVertex 0, bottom left:"+ vertexPositions[0] + ","+ vertexPositions[1]+ ","+ vertexPositions[2] +"\n" +
