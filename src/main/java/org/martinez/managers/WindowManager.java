@@ -48,10 +48,10 @@ public class WindowManager { // singleton
     }
     // public void enableResizeWindowCallback(...)
     private void initOpenGL(){
-        setCallKeyBacks();
-        setMouseCallbacks();
         makeContextCurrent();
         GL.createCapabilities();
+        setCallKeyBacks();
+        setMouseCallbacks();
         float CC_RED = 1.0f, CC_GREEN = 0.0f, CC_BLUE = 0.0f, CC_ALPHA = 1.0f;
         glClearColor(CC_RED , CC_GREEN, CC_BLUE, CC_ALPHA);
     }

@@ -3,9 +3,12 @@ package org.martinez.renderers;
 
 import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL;
 
+import org.martinez.Array;
 import org.martinez.cameras.Camera;
-import org.martinez.helper.ArrayWrapper;
+import org.martinez.listeners.KeyboardListener;
+import org.martinez.listeners.MouseListener;
 import org.martinez.managers.WindowManager;
 import org.martinez.shaders.ShaderObject;
 import org.martinez.utils.Spot;
@@ -13,6 +16,7 @@ import org.martinez.utils.Spot;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.Random;
 
 import static java.lang.Thread.sleep;
 import static org.lwjgl.glfw.GLFW.*;
@@ -58,16 +62,11 @@ public class RenderEngine{
     }
     // methods
     private void setupPGP(){
-        so.useProgram();
-        // todo remove color component of vertexes
 
-        so.loadMatrix4f("uProjMatrix", camera.getprojectionMatrix());
-        so.loadMatrix4f("uViewMatrix", camera.getViewingMatrix());
          // allocate NIO array for Vertex data
          this.positionStride = 3;
          this.textureStride = 2;
-         //this.colorStride = 4;
-         this.vertexStride = (this.positionStride + this.textureStride) * 4;
+         this.vertexStride = (this.positionStride + this.textureStride ) * 4;
         createVertexArray();
 
         this.VertexArrayObjectHandle = glGenVertexArrays();
@@ -77,31 +76,41 @@ public class RenderEngine{
         // setting vertex attribute pointers
         this.attributePointer0 = 0;
         this.attributePointer1 = 1;
-        glBufferData(GL_ARRAY_BUFFER, floatBuffer, GL_STATIC_DRAW);
 
         glVertexAttribPointer(this.attributePointer0, this.positionStride, GL_FLOAT, false,this.vertexStride, 0 );
         glEnableVertexAttribArray(this.attributePointer0);
-        glVertexAttribPointer(this.attributePointer1, this.textureStride, GL_FLOAT, false, this.vertexStride, 12);
+        glVertexAttribPointer(this.attributePointer1, this.textureStride, GL_FLOAT, false, this.vertexStride, (long)positionStride * Float.BYTES);
         glEnableVertexAttribArray(this.attributePointer1);
+        glBufferData(GL_ARRAY_BUFFER, floatBuffer, GL_STATIC_DRAW);
+        so.useProgram();
+        so.loadMatrix4f("uProjMatrix", camera.getprojectionMatrix());
+        so.loadMatrix4f("uViewMatrix", camera.getViewingMatrix());
+
+//        glVertexAttribPointer(this.attributePointer2,this.colorStride, GL_FLOAT, false, this.vertexStride, 20);
+//        glEnableVertexAttribArray(this.attributePointer2);
+
         // this argument represents the offset, in bytes. it should be set the
         // number of bytes of data for position coordinates. They are floats, 4 bytes, 3 coordinates, 4 * 3 = 12. If this doesn't work, you need to figure out what the correct offset is
 
     }
     private void initOpenGL(){
-        //GL.createCapabilities();
         setupPGP();
     }
 
     public void render(int framedelay) {
-        Vector4f COLOR_FACTOR = new Vector4f(0.2f, 0.4f, 0.6f, 1.0f);
+        Random random = new Random();
+        Vector4f COLOR_FACTOR = new Vector4f(0.4f, 0.2f, 0.6f, 1.0f);
         so.loadMatrix4f("uProjMatrix", this.camera.getprojectionMatrix());
-        so.loadMatrix4f("UViewMatrix", this.camera.getViewingMatrix());
+        so.loadMatrix4f("uViewMatrix", this.camera.getViewingMatrix());
         while(!manager.isGlfwWindowClosed()){
+
             glfwPollEvents();
-            glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+            glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
+
             for (int row = 0; row < rows; row++) {
                 for (int column = 0; column < columns; column++) {
+                    COLOR_FACTOR = new Vector4f(random.nextFloat(), random.nextFloat(), random.nextFloat(), random.nextFloat());
                     so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
                     renderTile(row, column);
                 }
@@ -123,7 +132,7 @@ public class RenderEngine{
 // Compute the vertexArray offset
         int va_offset = getVAVIndex(row, col); // vertex array offset of tile
         int[] rgVertexIndices = new int[] {va_offset, va_offset+1, va_offset+2,
-                va_offset + 1, va_offset+2, va_offset+3};
+                va_offset, va_offset+2, va_offset+3};
         VertexIndicesBuffer = BufferUtils.createIntBuffer(rgVertexIndices.length);
         VertexIndicesBuffer.put(rgVertexIndices).flip();
         this.eboID = glGenBuffers();
@@ -133,78 +142,87 @@ public class RenderEngine{
     }
 
     private int getVAVIndex(int row, int col) {
-        return (row * columns + col) * 4; // todo figure out what vpt is
+        return (row * columns + col) * 4;
     }
 
-    private void createVertexArray(){ // todo, put vertexes in a standard array, then insert the array into the floatbuffer
-        ArrayWrapper array = new ArrayWrapper(rows * columns * 4 * 5); // todo refactor magic number
-        final float square_length = 0.1f;
-        float padding = 0.07f;
+    private void createVertexArray(){
+        final int verticespertile = 4;
+        final int floatspervertex = 5;
+        Array floatarray = new Array(rows * columns * verticespertile * floatspervertex);
+        final float square_length = 100f;
         final float z = 0.0f;
-
         float x, y;
-        final float[] textureCoordinates = {
+
+        final float[] textureCoordinates = { // todo this can be shrunken to 2 entries, with .put(textureCoordinates,i, 2) replacing line 194
+                0.0f, 1.0f,
+                0.0f, 1.0f,
+                0.0f, 1.0f,
+                0.0f, 1.0f,
+                0.0f, 1.0f,
                 0.0f, 1.0f
         };
+        this.floatBuffer = BufferUtils.createFloatBuffer(rows * columns * verticespertile * floatspervertex);
 
-        this.floatBuffer = BufferUtils.createFloatBuffer(rows * columns * 4 * 5); // todo refactor magic number
-        // defining vertices for square.
-        //          *
-        //  *               *
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < columns; col++) {
-                x = (col * square_length) + padding; // translate x and y based on which row, col we are one, in addition to the length of the square. TODO figure out how to add padding
-                y = (row * square_length) + padding;
+                float padding = 10f;
+                x =    (col * square_length) ; // translate x and y based on which row, col we are on, in addition to the length of the square. TODO figure out how to add padding
+                y =    (row * square_length) ;
                 float[] vertexPositions = { // define a generic square and then translate it
-                        // triangle 1
-                        // bottom left
-                        x, y , z,
+
                         // bottom right
-                        x + square_length, y, z,
+                        (x + square_length) , y, z,
+                        //top right
+                        (x + square_length) , y + square_length, z,
                         // top left
-                        x, y + square_length, z,
-                        // top right
-                        x + square_length, y + square_length, z
+                        x , y + square_length, z,
+                        // bottom left
+                        x , y , z
+
+                        // top left
+                        // x, y + square_length, z,
+                        // bottom right
+                        //(x + square_length), y, z,
+
                 };
-                for (int i = 0; i < 12; i+=3) {   // put 4 vertices, data is interleaved
-                    // insert a vertex
-                        // position data. input i -> i + 2: position components of one vertex. i is used as an offset to look into vertexPositions
-                        //
-                    array.append(vertexPositions[i]);
-                    array.append(vertexPositions[i + 1]);
-                    array.append(vertexPositions[ i + 2]);
-                        //texture data
-                    array.append(textureCoordinates[0]);
-                    array.append(textureCoordinates[1]);
+                System.out.println("====Box====");
+                                System.out.print(" Vertex 0, bottom right:"+ vertexPositions[0] + ","+ vertexPositions[1]+ ","+ vertexPositions[2] +"\n" +
+                                        " Vertex 1, top right: "+ vertexPositions[3] + ","+ vertexPositions[4]+ ","+ vertexPositions[5] +"\n" +
+                                        " Vertex 2, top left: "+ vertexPositions[6] + ","+ vertexPositions[7]+ ","+ vertexPositions[8] + "\n" +
+                        " Vertex 3, bottom left:"+ vertexPositions[9] + ","+ vertexPositions[10]+ ","+ vertexPositions[11]+"\n");
+                for (int i = 0; i < vertexPositions.length; i++) {
+                    floatarray.append(vertexPositions[i]); // append positions
+                    if( i == 2 || i == 5 || i == 8 || i == 11){ // append textures 
+                        floatarray.append(textureCoordinates[0]);
+                        floatarray.append(textureCoordinates[1]);
+                    }
                 }
             }
         }
-        this.floatBuffer.put(array.getArray());
-
+        System.out.println(floatarray);
+        this.floatBuffer.put(floatarray.getArray());
         this.floatBuffer.flip();
     }
-    private void elementArray(){ // counterclockwise order
-        this.elementBuffer = BufferUtils.createIntBuffer(rows * columns * 6 * 9);
+    private void mockelementArray(){ // counterclockwise order
+        int[] elements = { 0, 2, 1};
+        this.VertexIndicesBuffer = BufferUtils.createIntBuffer(elements.length);
 
-        for (int row = 0; row < rows; row++) {
-            for (int column = 0; column < columns; column++) { // for each square
-                int bottomLeft = row * (columns + 1) + column;
-                int bottomRight = bottomLeft + 1;
-                int topLeft = bottomLeft + (columns + 1);
-                int topRight = topLeft + 1;
-                elementBuffer.put(bottomLeft);
-                elementBuffer.put(bottomRight);
-                elementBuffer.put(topRight);
-                elementBuffer.put(bottomLeft);
-                elementBuffer.put(topRight);
-                elementBuffer.put(topLeft);
-            }
-        }
-
-        elementBuffer.flip();
+        this.VertexIndicesBuffer.put(elements);
+        VertexIndicesBuffer.flip();
         // 2  * 3   * 5
         //
         //  0 *   1 * 4
+    }
+    private void mockvertexarray(){
+        float[] vertexes = {
+                0,0,0,0,1f,
+
+                0,0.5f,0,0,1,
+                0.5f,0,0,0,1,
+        };
+        this.floatBuffer = BufferUtils.createFloatBuffer(vertexes.length);
+        this.floatBuffer.put(vertexes);
+        this.floatBuffer.flip();
     }
 /*
     private float[][][] generateROWCOLCenterPoints(int rows, int columns){
@@ -257,6 +275,15 @@ public class RenderEngine{
 */
 private void setRADIUS(float radius) {
         this.radius = radius;
+    }
+    private void generatepositions(){
+           final float z = 0f;
+           final float square_length = 0.1f;
+           for (int x = 0; x < Spot.win_width; x++) {
+            for (int y = 0; y < Spot.win_height; y++) {
+
+            }
+        }
     }
 }
 

@@ -11,8 +11,8 @@ public class Driver {
         System.out.println("starting");
         WindowManager manager = WindowManager.getInstance();
         Camera camera = new Camera();
-        ShaderObject shaderObject = new ShaderObject("C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\shaders\\fs_texture_1.glsl",
-                "C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\shaders\\vs_texture_1.glsl");
+        ShaderObject shaderObject = new ShaderObject("vs_texture_1.glsl",
+                "fs_texture_1.glsl");
         RenderEngine engine = new RenderEngine(manager,shaderObject, camera);
         engine.render(Spot.FRAME_DELAY);
     }
