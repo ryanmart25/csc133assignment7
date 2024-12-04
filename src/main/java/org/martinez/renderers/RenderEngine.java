@@ -123,7 +123,7 @@ public class RenderEngine{
 // Compute the vertexArray offset
         int va_offset = getVAVIndex(row, col); // vertex array offset of tile
         int[] rgVertexIndices = new int[] {va_offset, va_offset+1, va_offset+2,
-                va_offset, va_offset+2, va_offset+3};
+                va_offset + 1, va_offset+2, va_offset+3};
         VertexIndicesBuffer = BufferUtils.createIntBuffer(rgVertexIndices.length);
         VertexIndicesBuffer.put(rgVertexIndices).flip();
         this.eboID = glGenBuffers();
@@ -137,8 +137,9 @@ public class RenderEngine{
     }
 
     private void createVertexArray(){ // todo, put vertexes in a standard array, then insert the array into the floatbuffer
-        ArrayWrapper wrapper = new ArrayWrapper(rows * columns * 4 * 5); // todo refactor magic number
+        ArrayWrapper array = new ArrayWrapper(rows * columns * 4 * 5); // todo refactor magic number
         final float square_length = 0.1f;
+        float padding = 0.07f;
         final float z = 0.0f;
 
         float x, y;
@@ -152,8 +153,8 @@ public class RenderEngine{
         //  *               *
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < columns; col++) {
-                x = col * square_length; // translate x and y based on which row, col we are one, in addition to the length of the square. TODO figure out how to add padding
-                y = row * square_length;
+                x = (col * square_length) + padding; // translate x and y based on which row, col we are one, in addition to the length of the square. TODO figure out how to add padding
+                y = (row * square_length) + padding;
                 float[] vertexPositions = { // define a generic square and then translate it
                         // triangle 1
                         // bottom left
@@ -162,28 +163,23 @@ public class RenderEngine{
                         x + square_length, y, z,
                         // top left
                         x, y + square_length, z,
-                        // triangle 2
-                        // top left
-                        x, y + square_length, z,
-                        // bottom right
-                        x + square_length, y, z,
                         // top right
                         x + square_length, y + square_length, z
                 };
-                for (int i = 0; i < 18; i+=3) {   // put 4 vertices, data is interleaved
+                for (int i = 0; i < 12; i+=3) {   // put 4 vertices, data is interleaved
                     // insert a vertex
                         // position data. input i -> i + 2: position components of one vertex. i is used as an offset to look into vertexPositions
                         //
-                    wrapper.append(vertexPositions[i]);
-                    wrapper.append(vertexPositions[i + 1]);
-                    wrapper.append(vertexPositions[ i + 2]);
+                    array.append(vertexPositions[i]);
+                    array.append(vertexPositions[i + 1]);
+                    array.append(vertexPositions[ i + 2]);
                         //texture data
-                    wrapper.append(textureCoordinates[0]);
-                    wrapper.append(textureCoordinates[1]);
+                    array.append(textureCoordinates[0]);
+                    array.append(textureCoordinates[1]);
                 }
             }
         }
-        this.floatBuffer.put(wrapper.getArray());
+        this.floatBuffer.put(array.getArray());
 
         this.floatBuffer.flip();
     }
