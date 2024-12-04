@@ -5,6 +5,7 @@ import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL;
 
+import org.martinez.Array;
 import org.martinez.cameras.Camera;
 import org.martinez.listeners.KeyboardListener;
 import org.martinez.listeners.MouseListener;
@@ -144,11 +145,13 @@ public class RenderEngine{
     }
 
     private void createVertexArray(){
-        final float square_length = 0.09f;
-        final float z = 0.0f;
-        float x, y;
         final int verticespertile = 6;
         final int floatspervertex = 5;
+        Array floatarray = new Array(rows * columns * verticespertile * floatspervertex);
+        final float square_length = 10f;
+        final float z = 0.0f;
+        float x, y;
+
         final float[] textureCoordinates = { // todo this can be shrunken to 2 entries, with .put(textureCoordinates,i, 2) replacing line 194
                 0.0f, 1.0f,
                 0.0f, 1.0f,
@@ -174,26 +177,28 @@ public class RenderEngine{
                         x, y + square_length, z,
 //                        / triangle 2
 //                        / top left
-                        x, y + square_length, z,
+                        //x, y + square_length, z,
 //                        / bottom right
-                        (x + square_length), y, z,
+                        //(x + square_length), y, z,
 //                        / top right
                         (x + square_length), y + square_length, z
                 };
-                System.out.println("====Box: ====");
-                System.out.print("Triangle 1:\nVertex 0, bottom left:"+ vertexPositions[0] + ","+ vertexPositions[1]+ ","+ vertexPositions[2] +"\n" +
-                        " Vertex 1, bottom right: "+ vertexPositions[3] + ","+ vertexPositions[4]+ ","+ vertexPositions[5] +"\n" +
-                        " Vertex 2, top left: "+ vertexPositions[6] + ","+ vertexPositions[7]+ ","+ vertexPositions[8] +"\n" +
-                        " Triangle 2:\nVertex 3, top left: "+ vertexPositions[9] + ","+ vertexPositions[10]+ ","+ vertexPositions[11] +"\n" +
-                        " Vertex 4, bottom right: "+ vertexPositions[12] + ","+ vertexPositions[13]+ ","+ vertexPositions[14] +"\n" +
-                        " Vertex 5, top right:"+ vertexPositions[15] + ","+ vertexPositions[16]+ ","+ vertexPositions[17]+"\n");
-                for (int i = 0; i < 6; i++) {   // put vertex data, interleaved
-
-                    this.floatBuffer.put(vertexPositions, i * 3, 3);
-                    this.floatBuffer.put(textureCoordinates, i * 2, 2);
+                //System.out.println("====Box====");
+                //System.out.print("Triangle 1:\nVertex 0, bottom left:"+ vertexPositions[0] + ","+ vertexPositions[1]+ ","+ vertexPositions[2] +"\n" +
+                //        " Vertex 1, bottom right: "+ vertexPositions[3] + ","+ vertexPositions[4]+ ","+ vertexPositions[5] +"\n" +
+                //        " Vertex 2, top left: "+ vertexPositions[6] + ","+ vertexPositions[7]+ ","+ vertexPositions[8] +
+                //        " Vertex 5, top right:"+ vertexPositions[9] + ","+ vertexPositions[10]+ ","+ vertexPositions[11]+"\n");
+                for (int i = 0; i < vertexPositions.length; i++) {
+                    floatarray.append(vertexPositions[i]);
+                    if( i == 2 || i == 5 || i == 8 || i == 11){
+                        floatarray.append(textureCoordinates[0]);
+                        floatarray.append(textureCoordinates[1]);
+                    }
                 }
             }
         }
+        System.out.println(floatarray);
+        this.floatBuffer.put(floatarray.getArray());
         this.floatBuffer.flip();
     }
     private void mockelementArray(){ // counterclockwise order
