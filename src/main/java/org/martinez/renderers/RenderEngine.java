@@ -16,6 +16,7 @@ import org.martinez.utils.Spot;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.Random;
 
 import static java.lang.Thread.sleep;
 import static org.lwjgl.glfw.GLFW.*;
@@ -97,17 +98,19 @@ public class RenderEngine{
     }
 
     public void render(int framedelay) {
-        Vector4f COLOR_FACTOR = new Vector4f(1.0f, 0.5f, 0.6f, 1.0f);
-
+        Random random = new Random();
+        Vector4f COLOR_FACTOR = new Vector4f(0.4f, 0.2f, 0.6f, 1.0f);
+        so.loadMatrix4f("uProjMatrix", this.camera.getprojectionMatrix());
+        so.loadMatrix4f("uViewMatrix", this.camera.getViewingMatrix());
         while(!manager.isGlfwWindowClosed()){
 
             glfwPollEvents();
             glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
-            so.loadMatrix4f("uProjMatrix", this.camera.getprojectionMatrix());
-            so.loadMatrix4f("uViewMatrix", this.camera.getViewingMatrix());
+
             for (int row = 0; row < rows; row++) {
                 for (int column = 0; column < columns; column++) {
+                    COLOR_FACTOR = new Vector4f(random.nextFloat(), random.nextFloat(), random.nextFloat(), random.nextFloat());
                     so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
                     renderTile(row, column);
                 }
@@ -146,7 +149,7 @@ public class RenderEngine{
         final int verticespertile = 4;
         final int floatspervertex = 5;
         Array floatarray = new Array(rows * columns * verticespertile * floatspervertex);
-        final float square_length = 50f;
+        final float square_length = 100f;
         final float z = 0.0f;
         float x, y;
 
@@ -162,19 +165,19 @@ public class RenderEngine{
 
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < columns; col++) {
-                float padding = 0.5f;
-                x =    (col * square_length); // translate x and y based on which row, col we are one, in addition to the length of the square. TODO figure out how to add padding
-                y =    (row * square_length);
+                float padding = 10f;
+                x =    (col * square_length) ; // translate x and y based on which row, col we are on, in addition to the length of the square. TODO figure out how to add padding
+                y =    (row * square_length) ;
                 float[] vertexPositions = { // define a generic square and then translate it
 
                         // bottom right
-                        (x + square_length), y, z,
+                        (x + square_length) , y, z,
                         //top right
-                        (x + square_length), y + square_length, z,
+                        (x + square_length) , y + square_length, z,
                         // top left
-                        x, y + square_length, z,
+                        x , y + square_length, z,
                         // bottom left
-                        x, y , z
+                        x , y , z
 
                         // top left
                         // x, y + square_length, z,
@@ -182,11 +185,11 @@ public class RenderEngine{
                         //(x + square_length), y, z,
 
                 };
-                //System.out.println("====Box====");
-                //System.out.print("Triangle 1:\nVertex 0, bottom left:"+ vertexPositions[0] + ","+ vertexPositions[1]+ ","+ vertexPositions[2] +"\n" +
-                //        " Vertex 1, bottom right: "+ vertexPositions[3] + ","+ vertexPositions[4]+ ","+ vertexPositions[5] +"\n" +
-                //        " Vertex 2, top left: "+ vertexPositions[6] + ","+ vertexPositions[7]+ ","+ vertexPositions[8] +
-                //        " Vertex 5, top right:"+ vertexPositions[9] + ","+ vertexPositions[10]+ ","+ vertexPositions[11]+"\n");
+                System.out.println("====Box====");
+                                System.out.print(" Vertex 0, bottom right:"+ vertexPositions[0] + ","+ vertexPositions[1]+ ","+ vertexPositions[2] +"\n" +
+                                        " Vertex 1, top right: "+ vertexPositions[3] + ","+ vertexPositions[4]+ ","+ vertexPositions[5] +"\n" +
+                                        " Vertex 2, top left: "+ vertexPositions[6] + ","+ vertexPositions[7]+ ","+ vertexPositions[8] + "\n" +
+                        " Vertex 3, bottom left:"+ vertexPositions[9] + ","+ vertexPositions[10]+ ","+ vertexPositions[11]+"\n");
                 for (int i = 0; i < vertexPositions.length; i++) {
                     floatarray.append(vertexPositions[i]); // append positions
                     if( i == 2 || i == 5 || i == 8 || i == 11){ // append textures 

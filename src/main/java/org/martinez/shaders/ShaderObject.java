@@ -5,43 +5,64 @@ import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
 import org.martinez.utils.EZFileRead;
 
+import java.io.IOException;
 import java.nio.FloatBuffer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import static org.lwjgl.opengl.GL20.*;
 
 public class ShaderObject {
 
     private int shader_program = 0;
+    private String vsSource;
+    private String fsSource;
+    private String vs_filename;
+    private String fs_filename;
 
     public ShaderObject(String s, String l){ // this will still allocate memory no matter what
-
-        if(EZFileRead.doesFileExist(s) && EZFileRead.doesFileExist(l)){
-            setupShaders(s,l);
-        }else{
-            throw new RuntimeException("ShaderObject.java: One or both files do not exist.");
-        }
+        this.vs_filename = s;
+        this.fs_filename = l;
+        setupShaders(s,l);
+        //if(EZFileRead.doesFileExist(s) && EZFileRead.doesFileExist(l)){
+        //
+        //}else{
+        //    throw new RuntimeException("ShaderObject.java: One or both files do not exist.");
+        //}
     }
     private void setupShaders(String vertexShaderFilename, String fragmentShaderFilename){
-
+        readShaderSourceCode(vertexShaderFilename);
         shader_program = glCreateProgram();
         int vs = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vs, readShaderSourceCode(vertexShaderFilename));
+        glShaderSource(vs, vsSource);
         glCompileShader(vs);
         glAttachShader(shader_program, vs);
         int fs = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fs, readShaderSourceCode(fragmentShaderFilename));
+        glShaderSource(fs, fsSource);
         glCompileShader(fs);
         glAttachShader(shader_program, fs);
         glLinkProgram(shader_program);
     }
-    private String readShaderSourceCode(String filename){
-        EZFileRead reader = new EZFileRead(filename);
-        int lines = reader.getNumLines();
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < lines; i++) {
-            builder.append(reader.getLine(i));
+    private void readShaderSourceCode(String filename){ // todo remove parameter to fit purpose
+        //EZFileRead reader = new EZFileRead(filename);
+        //int lines = reader.getNumLines();
+        //StringBuilder builder = new StringBuilder();
+        //for (int i = 0; i < lines; i++) {
+        //    builder.append(reader.getLine(i));
+        //}
+        //System.out.println(builder);
+        //String out = builder.toString();
+        //return builder.toString();
+
+        vs_filename = System.getProperty("user.dir") + "\\src\\main\\resources\\shaders\\" + vs_filename;
+         fs_filename = System.getProperty("user.dir") + "\\src\\main\\resources\\shaders\\" + fs_filename;
+        try {
+            vsSource = new String(Files.readAllBytes(Paths.get(vs_filename)));
+            fsSource = new String(Files.readAllBytes(Paths.get(fs_filename)));
+        } catch (IOException e) {
+            e.printStackTrace();
+            assert false : "Error opening shader files: " + vs_filename + ", " + fs_filename;
         }
-        return builder.toString();
     }
     public void useProgram(){
         glUseProgram(this.shader_program);
