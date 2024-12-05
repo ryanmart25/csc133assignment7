@@ -6,9 +6,11 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL;
 
 import org.martinez.Array;
+import org.martinez.backend.Board;
 import org.martinez.cameras.Camera;
 import org.martinez.listeners.KeyboardListener;
 import org.martinez.listeners.MouseListener;
+import org.martinez.listeners.XYMouseListener;
 import org.martinez.managers.WindowManager;
 import org.martinez.shaders.ShaderObject;
 import org.martinez.utils.Spot;
@@ -43,6 +45,8 @@ public class RenderEngine{
     private WindowManager manager;
     private ShaderObject so;
     private FloatBuffer floatBuffer;
+    private XYMouseListener mouseListener;
+    private Board board;
     private float radius = Spot.RADIUS;
     private int colorStride;
     private int attributePointer2;
@@ -50,12 +54,16 @@ public class RenderEngine{
     private Camera camera;
     private IntBuffer VertexIndicesBuffer;
     private int eboID;
-
+    private float square_length;
+    private float padding;
+    private boolean firstRender = true;
     // constructors
-    public RenderEngine(WindowManager manager, ShaderObject so, Camera camera){
+    public RenderEngine(WindowManager manager, ShaderObject so, Camera camera, XYMouseListener mouseListener, Board board){
         this.so = so;
         this.camera = camera;
         this.manager = manager;
+        this.mouseListener = mouseListener;
+        this.board = board;
         this.rows = Spot.ROWS;
         this.columns = Spot.COLUMNS;
         initOpenGL();
@@ -98,7 +106,8 @@ public class RenderEngine{
     }
 
     public void render(int framedelay) {
-        Random random = new Random();
+        //Random random = new Random();
+        int[][] gameBoard = this.board.getGameboard();
         Vector4f COLOR_FACTOR = new Vector4f(0.4f, 0.2f, 0.6f, 1.0f);
         so.loadMatrix4f("uProjMatrix", this.camera.getprojectionMatrix());
         so.loadMatrix4f("uViewMatrix", this.camera.getViewingMatrix());
@@ -107,7 +116,23 @@ public class RenderEngine{
             glfwPollEvents();
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
-
+            int clickedRow, clickedColumn; // get mouse click row, column
+            clickedRow = (int) ((XYMouseListener.getX() - padding) / square_length + padding);
+            clickedColumn = (int)(XYMouseListener.getY() - padding / square_length + padding);
+            // if the tile is undiscovered
+            if(firstRender){
+                // we are rendering for the first time, use the undiscovered texture
+            }
+            if(this.board.getState(clickedRow, clickedColumn) == 0){ // switch texture
+                int tiletype = gameBoard[clickedRow][clickedColumn]; // 1 = mine | 0 == gold
+                if(tiletype == 1){
+                    // set texture to mine texture
+                }
+                if(tiletype == 0){
+                    // set texture to gold
+                }
+                this.board.setState(clickedRow, clickedColumn, tiletype); // set the state to discovered: mine or gold
+            }
             for (int row = 0; row < rows; row++) {
                 for (int column = 0; column < columns; column++) {
 
@@ -149,8 +174,8 @@ public class RenderEngine{
         final int verticespertile = 4;
         final int floatspervertex = 5;
         Array floatarray = new Array(rows * columns * verticespertile * floatspervertex);
-        final float square_length = 100f;
-        float padding = 10f;
+        square_length = 100f;
+        padding = 10f;
         final float z = 0.0f;
         float x , y ;
 
