@@ -1,6 +1,8 @@
 package org.martinez.listeners;
 
 
+import org.lwjgl.glfw.GLFWMouseButtonCallback;
+
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
@@ -37,18 +39,27 @@ public class XYMouseListener {
                 get().mouseButtonPressed[1] ||
                 get().mouseButtonPressed[2];
     }
+        // todo change thse callbacks to be strongly referenced instances of the corresponding class
 
-    public static void mouseButtonCallback(long my_window, int button, int action, int mods) {
-        if (action == GLFW_PRESS) {
-            if (button < get().mouseButtonPressed.length) {
-                get().mouseButtonPressed[button] = true;
-            }
-        } else if (action == GLFW_RELEASE) {
-            if (button < get().mouseButtonPressed.length) {
-                get().mouseButtonPressed[button] = false;
-                get().isDragging = false;
+    // mouse button callback
+    public static GLFWMouseButtonCallback mouseButtonCallback = new GLFWMouseButtonCallback() {
+        @Override
+        public void invoke(long window, int button, int action, int mods) {
+            if (action == GLFW_PRESS) {
+                if (button < XYMouseListener.get().mouseButtonPressed.length) {
+                    XYMouseListener.get().mouseButtonPressed[button] = true;
+                }
+            } else if (action == GLFW_RELEASE) {
+                if (button < XYMouseListener.get().mouseButtonPressed.length) {
+                    XYMouseListener.get().mouseButtonPressed[button] = false;
+                    XYMouseListener.get().isDragging = false;
+                }
             }
         }
+    }
+
+    public static void mouseButtonCallback(long my_window, int button, int action, int mods) {
+
     }
 
     public static void mouseButtonDownReset(int button) {
