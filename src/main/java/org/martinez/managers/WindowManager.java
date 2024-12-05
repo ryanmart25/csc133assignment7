@@ -5,6 +5,7 @@ import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
 import org.lwjgl.opengl.GL;
 import org.martinez.listeners.KeyboardListener;
 import org.martinez.listeners.MouseListener;
+import org.martinez.listeners.XYMouseListener;
 import org.martinez.utils.Spot;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -62,7 +63,7 @@ public class WindowManager { // singleton
         glfwMakeContextCurrent(handle);
     }
     private void setMouseCallbacks(){
-        glfwSetMouseButtonCallback(handle, MouseListener.mouseButtonCallback);
+        glfwSetMouseButtonCallback(handle, XYMouseListener.mouseButtonCallback(););
         glfwSetCursorPosCallback(handle, MouseListener.cursorPosCallback);
     }
     public void swapBuffers(){

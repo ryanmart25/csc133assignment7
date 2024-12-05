@@ -14,6 +14,7 @@ import org.martinez.listeners.XYMouseListener;
 import org.martinez.managers.WindowManager;
 import org.martinez.shaders.ShaderObject;
 import org.martinez.utils.Spot;
+import org.martinez.utils.XYTextureObject;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -111,6 +112,13 @@ public class RenderEngine{
         Vector4f COLOR_FACTOR = new Vector4f(0.4f, 0.2f, 0.6f, 1.0f);
         so.loadMatrix4f("uProjMatrix", this.camera.getprojectionMatrix());
         so.loadMatrix4f("uViewMatrix", this.camera.getViewingMatrix());
+        // initialize texture objects
+        XYTextureObject undiscoveredTextureObject = new XYTextureObject("resources/textures/Bunny_1.PNG"); // todo resolve filepath
+        XYTextureObject mineTextureObject = new XYTextureObject("resources/textures/Bunny_2.PNG");
+        XYTextureObject goldTextureObject = new XYTextureObject("resources/textures/BunnyB_1.PNG");
+        undiscoveredTextureObject.loadImageToTexture();
+        mineTextureObject.loadImageToTexture();
+        goldTextureObject.loadImageToTexture();
         while(!manager.isGlfwWindowClosed()){
 
             glfwPollEvents();
@@ -119,20 +127,26 @@ public class RenderEngine{
             int clickedRow, clickedColumn; // get mouse click row, column
             clickedRow = (int) ((XYMouseListener.getX() - padding) / square_length + padding);
             clickedColumn = (int)(XYMouseListener.getY() - padding / square_length + padding);
+            // resolve correct texture
             // if the tile is undiscovered
             if(firstRender){
                 // we are rendering for the first time, use the undiscovered texture
+                undiscoveredTextureObject.bind_texture();
+                firstRender = false;
             }
             if(this.board.getState(clickedRow, clickedColumn) == 0){ // switch texture
                 int tiletype = gameBoard[clickedRow][clickedColumn]; // 1 = mine | 0 == gold
                 if(tiletype == 1){
                     // set texture to mine texture
+                    System.out.printf("Tile at: (%2d, %2d) is a mine", clickedRow, clickedColumn);
                 }
                 if(tiletype == 0){
                     // set texture to gold
+                    System.out.printf("Tile at: (%2d, %2d) is not a mine", clickedRow, clickedColumn);
                 }
                 this.board.setState(clickedRow, clickedColumn, tiletype); // set the state to discovered: mine or gold
             }
+            // render all tiles
             for (int row = 0; row < rows; row++) {
                 for (int column = 0; column < columns; column++) {
 
