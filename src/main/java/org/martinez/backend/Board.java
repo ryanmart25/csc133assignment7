@@ -8,7 +8,7 @@ public class Board {
     private final int rows = Spot.ROWS, columns = Spot.COLUMNS;
     private int[][] scoreboard;
     private int[][] gameboard; // todo consider changing to type char || should store mine, gold
-    private int[][] state; // 0 = undiscovered | 1 = mine | 2 = gold |||||| todo state should store undiscovered or discovered
+    private int[][] state; // 0 = undiscovered | 1 = discovered |||||| todo state should store undiscovered or discovered
     private Random generator;
     private int score;
     public int getScore(){

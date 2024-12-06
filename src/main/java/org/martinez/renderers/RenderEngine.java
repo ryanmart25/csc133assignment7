@@ -113,55 +113,63 @@ public class RenderEngine{
         so.loadMatrix4f("uProjMatrix", this.camera.getprojectionMatrix());
         so.loadMatrix4f("uViewMatrix", this.camera.getViewingMatrix());
         // initialize texture objects
-        XYTextureObject undiscoveredTextureObject = new XYTextureObject("resources/textures/Bunny_1.PNG"); // todo resolve filepath
-        XYTextureObject mineTextureObject = new XYTextureObject("resources/textures/Bunny_2.PNG");
-        XYTextureObject goldTextureObject = new XYTextureObject("resources/textures/BunnyB_1.PNG");
+        XYTextureObject undiscoveredTextureObject = new XYTextureObject("C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\textures\\Bunny_1.PNG"); // todo resolve filepath
+        XYTextureObject mineTextureObject = new XYTextureObject("C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\textures\\Bunny_2.PNG");
+        XYTextureObject goldTextureObject = new XYTextureObject("C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\textures\\BunnyB_1.PNG");
 
         while(!manager.isGlfwWindowClosed()){
 
             glfwPollEvents();
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
             int clickedRow, clickedColumn; // get mouse click row, column // todo clean up: first padding should be refactored to an "offset" variable
-            clickedRow = (int) ((XYMouseListener.getX() - padding) / square_length + padding);
-            clickedColumn = (int)(XYMouseListener.getY() - padding / square_length + padding);
-            // process mouse click
-            if(this.board.getState(clickedRow, clickedColumn) == Spot.UNDISCOVERED){ // switch texture
-                int tiletype = gameBoard[clickedRow][clickedColumn]; // 1 = mine | 0 == gold
-                if(tiletype == 1){
-                    // set texture to mine texture
-                    System.out.printf("Tile at: (%2d, %2d) is a mine", clickedRow, clickedColumn);
+            if(XYMouseListener.mouseButtonDown(GLFW_MOUSE_BUTTON_1)){
+                clickedRow = (int) ((XYMouseListener.getX() - padding) / square_length + padding);
+                clickedColumn = (int)(XYMouseListener.getY() - padding / square_length + padding);
+                if(clickedRow > rows)
+                    continue;
+                if(clickedRow < 0)
+                    continue;
+                if(clickedColumn > columns)
+                    continue;
+                if(clickedColumn < 0)
+                    continue;
+                // process mouse click
+
+                if(this.board.getState(clickedRow, clickedColumn) == Spot.UNDISCOVERED){ // switch texture
+                    this.board.setState(clickedRow, clickedColumn, Spot.DISCOVERED);
                 }
-                if(tiletype == 0){
-                    // set texture to gold
-                    System.out.printf("Tile at: (%2d, %2d) is not a mine", clickedRow, clickedColumn);
-                }
-                this.board.setState(clickedRow, clickedColumn, tiletype); // set the state to discovered: mine or gold
             }
+
             // resolve correct texture
             // if the tile is undiscovered
             // rendering
             // render undiscovered tiles first
-            undiscoveredTextureObject.loadImageToTexture(); // todo refactor magic numbers that identify a mine, undiscovered, or gold set undiscovered to 0, gold to 1, mine to 2
+            undiscoveredTextureObject.loadImageToTexture();
             for (int row = 0; row < rows; row++) {
                 for (int column = 0; column < columns; column++) {
                     if(this.board.getState(row, column) == Spot.UNDISCOVERED){ // if a tile is undiscovered, render it
+                        so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
                         renderTile(row, column);
                     }
                 }
             }
             // render mines second
+            mineTextureObject.loadImageToTexture();
             for (int row = 0; row < rows; row++) {
                 for (int column = 0; column < columns; column++) {
                     if(this.board.getTileType(row, column) == Spot.MINE){ // if a tile is a mine, render it
+                        so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
                         renderTile(row, column);
                     }
                 }
             }
             // render gold next
+            goldTextureObject.loadImageToTexture();
             for (int row = 0; row < rows; row++) {
                 for (int column = 0; column < columns; column++) {
                     if(this.board.getTileType(row, column) == Spot.GOLD){ // if a tile is gold, render it
+                        so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
                         renderTile(row, column);
                     }
                 }
@@ -235,11 +243,7 @@ public class RenderEngine{
                         //(x + square_length), y, z,
 
                 };
-                System.out.println("====Box====");
-                                System.out.print(" Vertex 0, bottom right:"+ vertexPositions[0] + ","+ vertexPositions[1]+ ","+ vertexPositions[2] +"\n" +
-                                        " Vertex 1, top right: "+ vertexPositions[3] + ","+ vertexPositions[4]+ ","+ vertexPositions[5] +"\n" +
-                                        " Vertex 2, top left: "+ vertexPositions[6] + ","+ vertexPositions[7]+ ","+ vertexPositions[8] + "\n" +
-                        " Vertex 3, bottom left:"+ vertexPositions[9] + ","+ vertexPositions[10]+ ","+ vertexPositions[11]+"\n");
+
                 for (int i = 0; i < vertexPositions.length; i++) {
                     floatarray.append(vertexPositions[i]); // append positions
                     if( i == 2 || i == 5 || i == 8 || i == 11){ // append textures 
@@ -249,7 +253,6 @@ public class RenderEngine{
                 }
             }
         }
-        System.out.println(floatarray);
         this.floatBuffer.put(floatarray.getArray());
         this.floatBuffer.flip();
     }
