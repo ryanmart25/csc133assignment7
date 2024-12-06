@@ -63,8 +63,8 @@ public class WindowManager { // singleton
         glfwMakeContextCurrent(handle);
     }
     private void setMouseCallbacks(){
-        glfwSetMouseButtonCallback(handle, XYMouseListener.mouseButtonCallback(););
-        glfwSetCursorPosCallback(handle, MouseListener.cursorPosCallback);
+        glfwSetMouseButtonCallback(handle, XYMouseListener.mouseButtonCallback);
+        glfwSetCursorPosCallback(handle, XYMouseListener.cursorPosCallback);
     }
     public void swapBuffers(){
         if(this.handle == -1){
