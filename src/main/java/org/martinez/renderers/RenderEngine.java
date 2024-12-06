@@ -116,25 +116,17 @@ public class RenderEngine{
         XYTextureObject undiscoveredTextureObject = new XYTextureObject("resources/textures/Bunny_1.PNG"); // todo resolve filepath
         XYTextureObject mineTextureObject = new XYTextureObject("resources/textures/Bunny_2.PNG");
         XYTextureObject goldTextureObject = new XYTextureObject("resources/textures/BunnyB_1.PNG");
-        undiscoveredTextureObject.loadImageToTexture();
-        mineTextureObject.loadImageToTexture();
-        goldTextureObject.loadImageToTexture();
+
         while(!manager.isGlfwWindowClosed()){
 
             glfwPollEvents();
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
-            int clickedRow, clickedColumn; // get mouse click row, column
+            int clickedRow, clickedColumn; // get mouse click row, column // todo clean up: first padding should be refactored to an "offset" variable
             clickedRow = (int) ((XYMouseListener.getX() - padding) / square_length + padding);
             clickedColumn = (int)(XYMouseListener.getY() - padding / square_length + padding);
-            // resolve correct texture
-            // if the tile is undiscovered
-            if(firstRender){
-                // we are rendering for the first time, use the undiscovered texture
-                undiscoveredTextureObject.bind_texture();
-                firstRender = false;
-            }
-            if(this.board.getState(clickedRow, clickedColumn) == 0){ // switch texture
+            // process mouse click
+            if(this.board.getState(clickedRow, clickedColumn) == Spot.UNDISCOVERED){ // switch texture
                 int tiletype = gameBoard[clickedRow][clickedColumn]; // 1 = mine | 0 == gold
                 if(tiletype == 1){
                     // set texture to mine texture
@@ -146,12 +138,32 @@ public class RenderEngine{
                 }
                 this.board.setState(clickedRow, clickedColumn, tiletype); // set the state to discovered: mine or gold
             }
-            // render all tiles
+            // resolve correct texture
+            // if the tile is undiscovered
+            // rendering
+            // render undiscovered tiles first
+            undiscoveredTextureObject.loadImageToTexture(); // todo refactor magic numbers that identify a mine, undiscovered, or gold set undiscovered to 0, gold to 1, mine to 2
             for (int row = 0; row < rows; row++) {
                 for (int column = 0; column < columns; column++) {
-
-                    so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
-                    renderTile(row, column);
+                    if(this.board.getState(row, column) == Spot.UNDISCOVERED){ // if a tile is undiscovered, render it
+                        renderTile(row, column);
+                    }
+                }
+            }
+            // render mines second
+            for (int row = 0; row < rows; row++) {
+                for (int column = 0; column < columns; column++) {
+                    if(this.board.getTileType(row, column) == Spot.MINE){ // if a tile is a mine, render it
+                        renderTile(row, column);
+                    }
+                }
+            }
+            // render gold next
+            for (int row = 0; row < rows; row++) {
+                for (int column = 0; column < columns; column++) {
+                    if(this.board.getTileType(row, column) == Spot.GOLD){ // if a tile is gold, render it
+                        renderTile(row, column);
+                    }
                 }
             }
             manager.swapBuffers();
@@ -241,27 +253,8 @@ public class RenderEngine{
         this.floatBuffer.put(floatarray.getArray());
         this.floatBuffer.flip();
     }
-    private void mockelementArray(){ // counterclockwise order
-        int[] elements = { 0, 2, 1};
-        this.VertexIndicesBuffer = BufferUtils.createIntBuffer(elements.length);
 
-        this.VertexIndicesBuffer.put(elements);
-        VertexIndicesBuffer.flip();
-        // 2  * 3   * 5
-        //
-        //  0 *   1 * 4
-    }
-    private void mockvertexarray(){
-        float[] vertexes = {
-                0,0,0,0,1f,
 
-                0,0.5f,0,0,1,
-                0.5f,0,0,0,1,
-        };
-        this.floatBuffer = BufferUtils.createFloatBuffer(vertexes.length);
-        this.floatBuffer.put(vertexes);
-        this.floatBuffer.flip();
-    }
 /*
     private float[][][] generateROWCOLCenterPoints(int rows, int columns){
         float[][][] centerpoints = new float[rows][columns][2];
@@ -313,15 +306,6 @@ public class RenderEngine{
 */
 private void setRADIUS(float radius) {
         this.radius = radius;
-    }
-    private void generatepositions(){
-           final float z = 0f;
-           final float square_length = 0.1f;
-           for (int x = 0; x < Spot.win_width; x++) {
-            for (int y = 0; y < Spot.win_height; y++) {
-
-            }
-        }
     }
 }
 

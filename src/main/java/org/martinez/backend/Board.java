@@ -7,8 +7,8 @@ import java.util.Random;
 public class Board {
     private final int rows = Spot.ROWS, columns = Spot.COLUMNS;
     private int[][] scoreboard;
-    private int[][] gameboard; // todo consider changing to type char
-    private int[][] state; // 0 = undiscovered | 1 = mine | 2 = gold
+    private int[][] gameboard; // todo consider changing to type char || should store mine, gold
+    private int[][] state; // 0 = undiscovered | 1 = mine | 2 = gold |||||| todo state should store undiscovered or discovered
     private Random generator;
     private int score;
     public int getScore(){
@@ -22,6 +22,9 @@ public class Board {
     }
     public int[][] getGameboard(){
         return this.gameboard;
+    }
+    public int getTileType(int row, int column){
+        return this.gameboard[row][column];
     }
     public Board(Random generator){
         this.scoreboard = new int[rows][columns];
@@ -39,21 +42,27 @@ public class Board {
     private void initializeStateBoard(){ // initialize game state to undiscovered
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
-                this.scoreboard[i][j] = 0;
+                this.scoreboard[i][j] = Spot.UNDISCOVERED;
             }
         }
     }
-    private void initializeGameBoard(){ // randomly seed board with 14 mines
-        int totalmines = 14;
+    private void initializeGameBoard(){
+        int totalmines = Spot.NUMMINES;
         int placedmines = 0;
         int r;
         int c;
-        while(placedmines < totalmines) {
+        while(placedmines < totalmines) { // seed mines
             r = generator.nextInt(rows);
             c = generator.nextInt(columns);
-            if(this.gameboard[r][c] == 0){
-                this.gameboard[r][c] = 1;
+            if(this.state[r][c] == Spot.UNDISCOVERED){
+                this.gameboard[r][c] = Spot.MINE;
                 placedmines++;
+            }
+        }
+        for (int row = 0; row < rows; row++) { // seed gold
+            for (int column = 0; column < columns; column++) {
+                if(gameboard[row][column] != Spot.MINE)
+                    gameboard[row][column] = Spot.GOLD;
             }
         }
     }
@@ -69,10 +78,10 @@ public class Board {
             }
         }
     }
-    public void printGameBoard(){
+    public void printGameBoard(){ // todo, looks like it might fail to identify a mine properly
         for (int row = 0; row < rows; row++) {
             for (int column = 0; column < columns; column++) {
-                if(this.gameboard[row][column] == 0){
+                if(this.gameboard[row][column] == Spot.GOLD){
                     System.out.print("G");
                 }else{
                     System.out.println("M");
