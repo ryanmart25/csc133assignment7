@@ -160,9 +160,14 @@ public class RenderEngine{
         so.loadMatrix4f("uProjMatrix", this.camera.getprojectionMatrix());
         so.loadMatrix4f("uViewMatrix", this.camera.getViewingMatrix());
         // initialize texture objects
-        XYTextureObject undiscoveredTextureObject = new XYTextureObject("C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\textures\\base.png"); // todo resolve filepath
-        XYTextureObject mineTextureObject = new XYTextureObject("C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\textures\\explosion.JPG");
-        XYTextureObject goldTextureObject = new XYTextureObject("C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\textures\\ShiningDiamond_1.PNG");
+        XYTextureObject undiscoveredTextureObject =
+                new XYTextureObject(System.getProperty("user.dir") + "\\src\\main\\resources\\textures\\base.png");
+        // todo resolve filepath
+        XYTextureObject mineTextureObject =
+                new XYTextureObject(System.getProperty("user.dir") + "\\src\\main\\resources\\textures\\explosion.jpg");
+
+        XYTextureObject goldTextureObject
+                = new XYTextureObject(System.getProperty("user.dir") + "\\src\\main\\resources\\textures\\ShiningDiamond_1.PNG");
        // undiscoveredTextureObject.bind_texture();
         while(!manager.isGlfwWindowClosed()){
 
