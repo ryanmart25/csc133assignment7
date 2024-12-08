@@ -18,6 +18,7 @@ public class WindowManager { // singleton
     //fields
     private static WindowManager instance = null;
     private long handle = -1;
+    public float aspectRatio;
     //constructors
     private WindowManager(){
        initGLFWWindow(win_width, win_height, SpotTwo.WINDOW_TITLE);
@@ -100,7 +101,7 @@ public class WindowManager { // singleton
                 @Override
                 public void invoke(long window, int width, int height){
                     glViewport(0,0,width, height);
-
+                    WindowManager.getInstance().aspectRatio = (float) (width / height);
                 }
             };
     // register callbacks

@@ -114,11 +114,13 @@ public class RenderEngine{
         if(position.x == -1)
             return; // invalid mouse click
         if(board.getCellStatus(position.x, position.y) == SpotTwo.CELL_STATUS.NOT_EXPOSED){ // switch texture
+            System.out.println("Switching cell status");
             board.changeCellStatus(position.x, position.y); // awards points as well
         }
         // print board update
-        board.printCellScores();
-        board.printBoard();
+        //board.printCellScores();
+        //board.printBoard();
+        board.printStatus();
         System.out.println("Current Score: " + board.getCurrentScore());
 
     }
@@ -170,15 +172,7 @@ public class RenderEngine{
             // if the tile is undiscovered
             // rendering
             // render undiscovered tiles first
-            undiscoveredTextureObject.loadImageToTexture();
-            for (int row = 0; row < rows; row++) {
-                for (int column = 0; column < columns; column++) {
-                    if(board.getCellStatus(row, column) == SpotTwo.CELL_STATUS.NOT_EXPOSED){ // if a tile is undiscovered, render it
-                        so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
-                        renderTile(row, column);
-                    }
-                }
-            }
+
             // render mines second
             mineTextureObject.loadImageToTexture();
             for (int row = 0; row < rows; row++) {
@@ -199,7 +193,15 @@ public class RenderEngine{
                     }
                 }
             }
-
+            undiscoveredTextureObject.loadImageToTexture();
+            for (int row = 0; row < rows; row++) {
+                for (int column = 0; column < columns; column++) {
+                    if(board.getCellStatus(row, column) == SpotTwo.CELL_STATUS.NOT_EXPOSED){ // if a tile is undiscovered, render it
+                        so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
+                        renderTile(row, column);
+                    }
+                }
+            }
             manager.swapBuffers();
 
             if(framedelay > 0){
@@ -247,9 +249,9 @@ public class RenderEngine{
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < columns; col++) {
 
-                x =    col * (square_length + padding) + padding; // translate x and y based on which row, col we are on, in addition to the length of the square.
-                y =    row * (square_length + padding) + padding;
-                if(x + square_length > SpotTwo.win_width || y + square_length > SpotTwo.win_height){
+                x =    (col * (square_length + OFFSET) + padding) ; // translate x and y based on which row, col we are on, in addition to the length of the square.
+                y =    (row * (square_length + OFFSET) + padding) ;
+                if(x + square_length > SpotTwo.win_width + OFFSET || y + square_length > SpotTwo.win_height + OFFSET){
                     continue;
                 }
                 float[] vertexPositions = { // define a generic square and then translate it

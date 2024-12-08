@@ -92,6 +92,17 @@ public class BoardTwo {
             System.out.print("\n");
         }
     }
+    public void printStatus(){
+        for (int row = 0; row < ROWS; row++) {
+            for (int column = 0; column < COLUMNs; column++) {
+                if (board[row][column].status == SpotTwo.CELL_STATUS.NOT_EXPOSED)
+                    System.out.print("N ");
+                else
+                    System.out.print("E ");
+            }
+            System.out.print("\n");
+        }
+    }
     public boolean isGameActive(){
         return gameActive;
     }
@@ -107,11 +118,13 @@ public class BoardTwo {
         return board[row][column].status;
     }
     public SpotTwo.CELL_TYPE changeCellStatus(int row, int column){
-        if(board[row][column].status == SpotTwo.CELL_STATUS.NOT_EXPOSED)
+        if(board[row][column].status == SpotTwo.CELL_STATUS.NOT_EXPOSED){
+            System.out.println("changing cell status 2");
             board[row][column].status = SpotTwo.CELL_STATUS.EXPOSED;
-        if(board[row][column].status == SpotTwo.CELL_STATUS.EXPOSED)
-            board[row][column].status = SpotTwo.CELL_STATUS.NOT_EXPOSED;
+        }
         currentScore += board[row][column].cellScore;
+
+
         return board[row][column].type;
     }
     public SpotTwo.CELL_TYPE getCellType(int row, int column){

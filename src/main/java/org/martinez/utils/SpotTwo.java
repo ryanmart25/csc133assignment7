@@ -8,8 +8,8 @@ public class SpotTwo { // prof's spot file
 
     public static int win_width =
             2* OFFSET + (COLUMNS -1)*PADDING + COLUMNS * LENGTH;
-    public static int win_height =
-            2* OFFSET + (ROWS -1)*PADDING + ROWS * LENGTH;
+    public static int win_height = win_width;
+            //2* OFFSET + (ROWS -1)*PADDING + ROWS * LENGTH; // uncomment when you figure out aspect ratios
     public static final float FRUSTUM_LEFT = 0.0f,   FRUSTUM_RIGHT = (float) win_width,
                 FRUSTUM_BOTTOM = 0.0f, FRUSTUM_TOP = (float) win_height,
                 Z_NEAR = 0.0f, Z_FAR = 100.0f;
@@ -17,4 +17,5 @@ public class SpotTwo { // prof's spot file
             public static final int NUMMINES = 14;
     public enum CELL_STATUS {NOT_EXPOSED, EXPOSED };
     public enum CELL_TYPE {MINE, GOLD};
+
 }
