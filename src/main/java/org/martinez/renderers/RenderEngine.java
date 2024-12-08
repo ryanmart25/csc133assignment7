@@ -91,7 +91,9 @@ public class RenderEngine{
         glVertexAttribPointer(this.attributePointer1, this.textureStride, GL_FLOAT, false, this.vertexStride, (long)positionStride * Float.BYTES);
         glEnableVertexAttribArray(this.attributePointer1);
         glBufferData(GL_ARRAY_BUFFER, floatBuffer, GL_STATIC_DRAW);
+        glEnable(GL_TEXTURE_2D);
         so.useProgram();
+       // so.loadMatrix4f("TEX_SAMPLER", );
         so.loadMatrix4f("uProjMatrix", camera.getprojectionMatrix());
         so.loadMatrix4f("uViewMatrix", camera.getViewingMatrix());
 
@@ -113,10 +115,10 @@ public class RenderEngine{
         so.loadMatrix4f("uProjMatrix", this.camera.getprojectionMatrix());
         so.loadMatrix4f("uViewMatrix", this.camera.getViewingMatrix());
         // initialize texture objects
-        //XYTextureObject undiscoveredTextureObject = new XYTextureObject("C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\textures\\Bunny_1.PNG"); // todo resolve filepath
+        XYTextureObject undiscoveredTextureObject = new XYTextureObject("C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\textures\\multicolortexture.png"); // todo resolve filepath
         //XYTextureObject mineTextureObject = new XYTextureObject("C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\textures\\Bunny_2.PNG");
         //XYTextureObject goldTextureObject = new XYTextureObject("C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\textures\\BunnyB_1.PNG");
-
+       // undiscoveredTextureObject.bind_texture();
         while(!manager.isGlfwWindowClosed()){
 
             glfwPollEvents();
@@ -127,7 +129,7 @@ public class RenderEngine{
 
                 clickedRow = (int) ( ((Math.floor( (XYMouseListener.getX() - padding))   /  square_length + padding) % rows));
                 clickedColumn = (int)( (Math.floor( XYMouseListener.getY() - padding) /  square_length + padding) % columns );
-
+                XYMouseListener.mouseButtonDownReset(GLFW_MOUSE_BUTTON_1);
                 System.out.println("Moue click at: " + clickedRow + ", " + clickedColumn);
                 if(clickedRow > rows)
                     continue;
@@ -142,7 +144,7 @@ public class RenderEngine{
                 if(this.board.getState(clickedRow, clickedColumn) == Spot.UNDISCOVERED){ // switch texture
                     this.board.setState(clickedRow, clickedColumn, Spot.DISCOVERED);
                 }
-                XYMouseListener.mouseButtonDownReset(GLFW_MOUSE_BUTTON_1);
+
             }
 
             // resolve correct texture
@@ -231,15 +233,15 @@ public class RenderEngine{
                     continue;
                 }
                 float[] vertexPositions = { // define a generic square and then translate it
-
+                        //Position Data                              texture data
                         // bottom right
-                        (x + square_length) , y, z,
+                        (x + square_length) , y, z,                 1.0f, 0.0f,
                         //top right
-                        (x + square_length) , y + square_length, z,
+                        (x + square_length) , y + square_length, z, 1.0f, 1.0f,
                         // top left
-                        x , y + square_length, z,
+                        x , y + square_length, z,                   0.0f,1.0f,
                         // bottom left
-                        x , y , z
+                        x , y , z,                                   0.0f, 1.0f
 
                         // top left
                         // x, y + square_length, z,
@@ -250,13 +252,14 @@ public class RenderEngine{
 
                 for (int i = 0; i < vertexPositions.length; i++) {
                     floatarray.append(vertexPositions[i]); // append positions
-                    if( i == 2 || i == 5 || i == 8 || i == 11){ // append textures 
-                        floatarray.append(textureCoordinates[0]);
-                        floatarray.append(textureCoordinates[1]);
-                    }
+                    //if( i == 2 || i == 5 || i == 8 || i == 11){ // append textures
+                    //    floatarray.append(textureCoordinates[0]);
+                    //    floatarray.append(textureCoordinates[1]);
+                    //}
                 }
             }
         }
+        System.out.println(floatarray);
         this.floatBuffer.put(floatarray.getArray());
         this.floatBuffer.flip();
     }

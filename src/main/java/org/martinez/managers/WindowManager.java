@@ -51,6 +51,7 @@ public class WindowManager { // singleton
     private void initOpenGL(){
         makeContextCurrent();
         GL.createCapabilities();
+        //glEnable(GL_TEXTURE_2D);
         setCallKeyBacks();
         setMouseCallbacks();
         float CC_RED = 1.0f, CC_GREEN = 0.0f, CC_BLUE = 0.0f, CC_ALPHA = 1.0f;
