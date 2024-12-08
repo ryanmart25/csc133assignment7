@@ -109,6 +109,18 @@ public class RenderEngine{
     private void initOpenGL(){
         setupPGP();
     }
+    private boolean processMouseClick(){
+        Vector2i position = getMouseClickPosition();
+        if(position.x == -1)
+            return false; // invalid mouse click
+        if(board.getCellStatus(position.x, position.y) == SpotTwo.CELL_STATUS.NOT_EXPOSED){ // switch texture
+            board.changeCellStatus(position.x, position.y); // awards points as well
+        }
+        // print board update
+        board.printCellScores();
+        board.printBoard();
+        return true;
+    }
     private Vector2i getMouseClickPosition(){
         int row = -1, column = -1;
         Vector2i retVec = new Vector2i(-1, -1);
@@ -128,6 +140,8 @@ public class RenderEngine{
             if (yMin < yp || yp < (yMin - LENGTH)) {
                 return retVec;
             }
+            retVec.x = row;
+            retVec.y = column;
         }
         return retVec;
     }
@@ -168,6 +182,8 @@ public class RenderEngine{
                     board.changeCellStatus(clickedRow, clickedColumn); // awards points as well
                 }
                 // print board update
+                board.printCellScores();
+                board.printBoard();
             }
 
             // resolve correct texture
