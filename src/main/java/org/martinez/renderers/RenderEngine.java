@@ -113,7 +113,7 @@ public class RenderEngine{
         so.loadMatrix4f("uProjMatrix", this.camera.getprojectionMatrix());
         so.loadMatrix4f("uViewMatrix", this.camera.getViewingMatrix());
         // initialize texture objects
-        //XYTextureObject undiscoveredTextureObject = new XYTextureObject("C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\textures\\Bunny_1.PNG"); // todo resolve filepath
+        XYTextureObject undiscoveredTextureObject = new XYTextureObject("C:\\Users\\User\\csc133assignment7\\src\\main\\resources\\textures\\MineBomb_2.PNG"); // todo resolve filepath
         //XYTextureObject mineTextureObject = new XYTextureObject("C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\textures\\Bunny_2.PNG");
         //XYTextureObject goldTextureObject = new XYTextureObject("C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\textures\\BunnyB_1.PNG");
 
@@ -122,11 +122,14 @@ public class RenderEngine{
             glfwPollEvents();
             glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
+            undiscoveredTextureObject.loadImageToTexture();
+            undiscoveredTextureObject.bind_texture();
             int clickedRow, clickedColumn; // get mouse click row, column // todo clean up: first padding should be refactored to an "offset" variable
             if(XYMouseListener.mouseButtonDown(GLFW_MOUSE_BUTTON_1)){
 
                 clickedRow = (int) ( ((Math.floor( (XYMouseListener.getX() - padding))   /  square_length + padding) % rows));
                 clickedColumn = (int)( (Math.floor( XYMouseListener.getY() - padding) /  square_length + padding) % columns );
+                XYMouseListener.mouseButtonDownReset(GLFW_MOUSE_BUTTON_1);
 
                 System.out.println("Moue click at: " + clickedRow + ", " + clickedColumn);
                 if(clickedRow > rows)
@@ -142,14 +145,12 @@ public class RenderEngine{
                 if(this.board.getState(clickedRow, clickedColumn) == Spot.UNDISCOVERED){ // switch texture
                     this.board.setState(clickedRow, clickedColumn, Spot.DISCOVERED);
                 }
-                XYMouseListener.mouseButtonDownReset(GLFW_MOUSE_BUTTON_1);
             }
 
             // resolve correct texture
             // if the tile is undiscovered
             // rendering
             // render undiscovered tiles first
-          //  undiscoveredTextureObject.loadImageToTexture();
             for (int row = 0; row < rows; row++) {
                 for (int column = 0; column < columns; column++) {
                     if(this.board.getState(row, column) == Spot.UNDISCOVERED){ // if a tile is undiscovered, render it
@@ -228,7 +229,7 @@ public class RenderEngine{
                 x =    col * (square_length + padding) + padding; // translate x and y based on which row, col we are on, in addition to the length of the square.
                 y =    row * (square_length + padding) + padding;
                 if(x + square_length > Spot.win_width || y + square_length > Spot.win_height){
-                    continue;
+                    break;
                 }
                 float[] vertexPositions = { // define a generic square and then translate it
 
@@ -257,6 +258,7 @@ public class RenderEngine{
                 }
             }
         }
+        System.out.print(floatarray);
         this.floatBuffer.put(floatarray.getArray());
         this.floatBuffer.flip();
     }
