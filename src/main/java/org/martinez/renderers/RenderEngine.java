@@ -109,17 +109,18 @@ public class RenderEngine{
     private void initOpenGL(){
         setupPGP();
     }
-    private boolean processMouseClick(){
+    private void processMouseClick(){
         Vector2i position = getMouseClickPosition();
         if(position.x == -1)
-            return false; // invalid mouse click
+            return; // invalid mouse click
         if(board.getCellStatus(position.x, position.y) == SpotTwo.CELL_STATUS.NOT_EXPOSED){ // switch texture
             board.changeCellStatus(position.x, position.y); // awards points as well
         }
         // print board update
         board.printCellScores();
         board.printBoard();
-        return true;
+        System.out.println("Current Score: " + board.getCurrentScore());
+
     }
     private Vector2i getMouseClickPosition(){
         int row = -1, column = -1;
@@ -162,34 +163,13 @@ public class RenderEngine{
             glClear(GL_COLOR_BUFFER_BIT);
             //int clickedRow, clickedColumn; // get mouse click row, column // todo clean up: first padding should be refactored to an "offset" variabl
 
-            if(!processMouseClick())
-                continue;
+            processMouseClick();
+
 
             // resolve correct texture
             // if the tile is undiscovered
             // rendering
             // render undiscovered tiles first
-
-            // render mines second
-            mineTextureObject.loadImageToTexture();
-            for (int row = 0; row < rows; row++) {
-                for (int column = 0; column < columns; column++) {
-                    if(board.getCellType(row, column) == SpotTwo.CELL_TYPE.MINE){ // if a tile is a mine, render it
-                        so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
-                        renderTile(row, column);
-                    }
-                }
-            }
-            // render gold next
-            goldTextureObject.loadImageToTexture();
-            for (int row = 0; row < rows; row++) {
-                for (int column = 0; column < columns; column++) {
-                    if(board.getCellType(row, column) == SpotTwo.CELL_TYPE.GOLD){ // if a tile is gold, render it
-                        so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
-                        renderTile(row, column);
-                    }
-                }
-            }
             undiscoveredTextureObject.loadImageToTexture();
             for (int row = 0; row < rows; row++) {
                 for (int column = 0; column < columns; column++) {
@@ -199,6 +179,27 @@ public class RenderEngine{
                     }
                 }
             }
+            // render mines second
+            mineTextureObject.loadImageToTexture();
+            for (int row = 0; row < rows; row++) {
+                for (int column = 0; column < columns; column++) {
+                    if(board.getCellType(row, column) == SpotTwo.CELL_TYPE.MINE && board.getCellStatus(row, column) == CELL_STATUS.EXPOSED){ // if a tile is a mine, render it
+                        so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
+                        renderTile(row, column);
+                    }
+                }
+            }
+            // render gold next
+            goldTextureObject.loadImageToTexture();
+            for (int row = 0; row < rows; row++) {
+                for (int column = 0; column < columns; column++) {
+                    if(board.getCellType(row, column) == SpotTwo.CELL_TYPE.GOLD && board.getCellStatus(row, column) == CELL_STATUS.EXPOSED){ // if a tile is gold, render it
+                        so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
+                        renderTile(row, column);
+                    }
+                }
+            }
+
             manager.swapBuffers();
 
             if(framedelay > 0){
