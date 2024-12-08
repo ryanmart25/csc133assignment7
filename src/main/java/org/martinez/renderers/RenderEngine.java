@@ -110,18 +110,24 @@ public class RenderEngine{
         setupPGP();
     }
     private void processMouseClick(){
+        if (!board.isGameActive())
+            return;
         Vector2i position = getMouseClickPosition();
         if(position.x == -1)
             return; // invalid mouse click
-        if(board.getCellStatus(position.x, position.y) == SpotTwo.CELL_STATUS.NOT_EXPOSED){ // switch texture
-            System.out.println("Switching cell status");
+
+        if(board.getCellType(position.x, position.y) == CELL_TYPE.MINE){
+            board.revealBoard();
+        }
+        else if(board.getCellStatus(position.x, position.y) == SpotTwo.CELL_STATUS.NOT_EXPOSED){ // switch texture
             board.changeCellStatus(position.x, position.y); // awards points as well
+            board.printStatus();
+            System.out.println(" Mouse click at: ("+position.x+", "+position.y + ")    score: " + board.getCurrentScore());
         }
         // print board update
         //board.printCellScores();
         //board.printBoard();
-        board.printStatus();
-        System.out.println("Current Score: " + board.getCurrentScore());
+
 
     }
     private Vector2i getMouseClickPosition(){

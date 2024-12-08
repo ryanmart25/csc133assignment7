@@ -4,7 +4,7 @@ public class SpotTwo { // prof's spot file
     public static String WINDOW_TITLE = "CSC 133: Click & Kill Time!";
     public static final int FRAME_DELAY = 200;
     public static int OFFSET = 40, LENGTH = 100, PADDING = 40;
-    public static int ROWS = 9, COLUMNS = 6;
+    public static int ROWS = 9, COLUMNS = 7;
 
     public static int win_width =
             2* OFFSET + (COLUMNS -1)*PADDING + COLUMNS * LENGTH;

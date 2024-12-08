@@ -143,5 +143,12 @@ public class BoardTwo {
             this.cellScore = 0;
         }
     }
-
+    public void revealBoard(){
+        gameActive = false;
+        for (int row = 0; row < ROWS; row++) {
+            for (int column = 0; column < COLUMNs; column++) {
+                board[row][column].status = SpotTwo.CELL_STATUS.EXPOSED;
+            }
+        }
+    }
 }
