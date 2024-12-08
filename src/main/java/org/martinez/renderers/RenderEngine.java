@@ -1,6 +1,7 @@
 package org.martinez.renderers;
 
 
+import org.joml.Vector2i;
 import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL;
@@ -14,7 +15,7 @@ import org.martinez.listeners.MouseListener;
 import org.martinez.listeners.XYMouseListener;
 import org.martinez.managers.WindowManager;
 import org.martinez.shaders.ShaderObject;
-import org.martinez.utils.Spot;
+import org.martinez.utils.SpotTwo;
 import org.martinez.utils.XYTextureObject;
 
 import java.nio.FloatBuffer;
@@ -28,8 +29,8 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
-import static org.lwjgl.opengl.GL30.glBindVertexArray;
-import static org.lwjgl.opengl.GL30.glGenVertexArrays;
+import static org.lwjgl.opengl.GL30.*;
+import static org.martinez.utils.SpotTwo.*;
 
 public class RenderEngine{
 
@@ -49,7 +50,7 @@ public class RenderEngine{
     private FloatBuffer floatBuffer;
     private XYMouseListener mouseListener;
     private BoardTwo board;
-    private float radius = Spot.RADIUS;
+    //private float radius = SpotTwo.RADIUS;
     private int colorStride;
     private int attributePointer2;
     private IntBuffer elementBuffer;
@@ -58,7 +59,7 @@ public class RenderEngine{
     private int eboID;
     private float square_length;
     private float padding;
-    private boolean firstRender = true;
+    //private boolean firstRender = true;
     // constructors
     public RenderEngine(WindowManager manager, ShaderObject so, Camera camera, XYMouseListener mouseListener, BoardTwo board){
         this.so = so;
@@ -66,8 +67,8 @@ public class RenderEngine{
         this.manager = manager;
         this.mouseListener = mouseListener;
         this.board = board;
-        this.rows = Spot.ROWS;
-        this.columns = Spot.COLUMNS;
+        this.rows = SpotTwo.ROWS;
+        this.columns = SpotTwo.COLUMNS;
         initOpenGL();
     }
     // methods
@@ -108,7 +109,28 @@ public class RenderEngine{
     private void initOpenGL(){
         setupPGP();
     }
+    private Vector2i getMouseClickPosition(){
+        int row = -1, column = -1;
+        Vector2i retVec = new Vector2i(-1, -1);
+        if(XYMouseListener.mouseButtonDown(GLFW_MOUSE_BUTTON_1)) {
+            int xp = (int)XYMouseListener.getX();
+            int yp = (int)XYMouseListener.getY();
+            XYMouseListener.mouseButtonDownReset(0);
 
+            column = (int)( (xp - OFFSET)/(LENGTH+PADDING) );
+            float xMin = OFFSET + column *(LENGTH + PADDING);
+            if (xMin > xp || xp > (xMin + LENGTH)) {
+                return retVec;
+            }
+            // no need to check for both row and col validity: if a row is valid, then so is its col
+            row = (int)( (win_height - OFFSET - yp)/(LENGTH + PADDING) );
+            float yMin = (float)(win_height - OFFSET - row * (LENGTH + PADDING));
+            if (yMin < yp || yp < (yMin - LENGTH)) {
+                return retVec;
+            }
+        }
+        return retVec;
+    }
     public void render(int framedelay) {
         //Random random = new Random();
         Vector4f COLOR_FACTOR = new Vector4f(0.4f, 0.2f, 0.6f, 1.0f);
@@ -124,7 +146,8 @@ public class RenderEngine{
             glfwPollEvents();
             glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
-            int clickedRow, clickedColumn; // get mouse click row, column // todo clean up: first padding should be refactored to an "offset" variable
+            int clickedRow, clickedColumn; // get mouse click row, column // todo clean up: first padding should be refactored to an "offset" variabl
+
             if(XYMouseListener.mouseButtonDown(GLFW_MOUSE_BUTTON_1)){
                 // todo ensure mouse click position detection works
                 clickedRow = (int) ( ((Math.floor( (XYMouseListener.getX() - padding))   /  square_length + padding) % rows));
@@ -141,8 +164,8 @@ public class RenderEngine{
                     continue;
                 // process mouse click
 
-                if(board.getCellStatus(clickedRow, clickedColumn) == Spot.CELL_STATUS.NOT_EXPOSED){ // switch texture
-                    board.changeCellStatus(clickedRow, clickedColumn);
+                if(board.getCellStatus(clickedRow, clickedColumn) == SpotTwo.CELL_STATUS.NOT_EXPOSED){ // switch texture
+                    board.changeCellStatus(clickedRow, clickedColumn); // awards points as well
                 }
                 // print board update
             }
@@ -151,20 +174,12 @@ public class RenderEngine{
             // if the tile is undiscovered
             // rendering
             // render undiscovered tiles first
-            undiscoveredTextureObject.loadImageToTexture();
-            for (int row = 0; row < rows; row++) {
-                for (int column = 0; column < columns; column++) {
-                    if(this.board.getState(row, column) == Spot.UNDISCOVERED){ // if a tile is undiscovered, render it
-                        so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
-                        renderTile(row, column);
-                    }
-                }
-            }
+
             // render mines second
             mineTextureObject.loadImageToTexture();
             for (int row = 0; row < rows; row++) {
                 for (int column = 0; column < columns; column++) {
-                    if(this.board.getTileType(row, column) == Spot.MINE){ // if a tile is a mine, render it
+                    if(board.getCellType(row, column) == SpotTwo.CELL_TYPE.MINE){ // if a tile is a mine, render it
                         so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
                         renderTile(row, column);
                     }
@@ -174,7 +189,16 @@ public class RenderEngine{
             goldTextureObject.loadImageToTexture();
             for (int row = 0; row < rows; row++) {
                 for (int column = 0; column < columns; column++) {
-                    if(this.board.getTileType(row, column) == Spot.GOLD){ // if a tile is gold, render it
+                    if(board.getCellType(row, column) == SpotTwo.CELL_TYPE.GOLD){ // if a tile is gold, render it
+                        so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
+                        renderTile(row, column);
+                    }
+                }
+            }
+            undiscoveredTextureObject.loadImageToTexture();
+            for (int row = 0; row < rows; row++) {
+                for (int column = 0; column < columns; column++) {
+                    if(board.getCellStatus(row, column) == SpotTwo.CELL_STATUS.NOT_EXPOSED){ // if a tile is undiscovered, render it
                         so.loadVector4f("COLOR_FACTOR", COLOR_FACTOR);
                         renderTile(row, column);
                     }
@@ -229,7 +253,7 @@ public class RenderEngine{
 
                 x =    col * (square_length + padding) + padding; // translate x and y based on which row, col we are on, in addition to the length of the square.
                 y =    row * (square_length + padding) + padding;
-                if(x + square_length > Spot.win_width || y + square_length > Spot.win_height){
+                if(x + square_length > SpotTwo.win_width || y + square_length > SpotTwo.win_height){
                     continue;
                 }
                 float[] vertexPositions = { // define a generic square and then translate it
@@ -314,8 +338,6 @@ public class RenderEngine{
 
     }
 */
-private void setRADIUS(float radius) {
-        this.radius = radius;
-    }
+
 }
 

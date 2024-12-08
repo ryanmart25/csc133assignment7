@@ -6,13 +6,13 @@ import org.lwjgl.opengl.GL;
 import org.martinez.listeners.KeyboardListener;
 import org.martinez.listeners.MouseListener;
 import org.martinez.listeners.XYMouseListener;
-import org.martinez.utils.Spot;
+import org.martinez.utils.SpotTwo;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
-import static org.martinez.utils.Spot.win_height;
-import static org.martinez.utils.Spot.win_width;
+import static org.martinez.utils.SpotTwo.win_height;
+import static org.martinez.utils.SpotTwo.win_width;
 
 public class WindowManager { // singleton
     //fields
@@ -20,7 +20,7 @@ public class WindowManager { // singleton
     private long handle = -1;
     //constructors
     private WindowManager(){
-       initGLFWWindow(win_width, win_height, Spot.TITLE);
+       initGLFWWindow(win_width, win_height, SpotTwo.WINDOW_TITLE);
        initOpenGL();
     }
     //methods
