@@ -160,31 +160,10 @@ public class RenderEngine{
             glfwPollEvents();
             glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
-            int clickedRow, clickedColumn; // get mouse click row, column // todo clean up: first padding should be refactored to an "offset" variabl
+            //int clickedRow, clickedColumn; // get mouse click row, column // todo clean up: first padding should be refactored to an "offset" variabl
 
-            if(XYMouseListener.mouseButtonDown(GLFW_MOUSE_BUTTON_1)){
-                // todo ensure mouse click position detection works
-                clickedRow = (int) ( ((Math.floor( (XYMouseListener.getX() - padding))   /  square_length + padding) % rows));
-                clickedColumn = (int)( (Math.floor( XYMouseListener.getY() - padding) /  square_length + padding) % columns );
-                XYMouseListener.mouseButtonDownReset(GLFW_MOUSE_BUTTON_1);
-                System.out.println("Moue click at: " + clickedRow + ", " + clickedColumn);
-                if(clickedRow > rows)
-                    continue;
-                if(clickedRow < 0)
-                    continue;
-                if(clickedColumn > columns)
-                    continue;
-                if(clickedColumn < 0)
-                    continue;
-                // process mouse click
-
-                if(board.getCellStatus(clickedRow, clickedColumn) == SpotTwo.CELL_STATUS.NOT_EXPOSED){ // switch texture
-                    board.changeCellStatus(clickedRow, clickedColumn); // awards points as well
-                }
-                // print board update
-                board.printCellScores();
-                board.printBoard();
-            }
+            if(!processMouseClick())
+                continue;
 
             // resolve correct texture
             // if the tile is undiscovered
