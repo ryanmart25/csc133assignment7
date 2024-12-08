@@ -7,6 +7,7 @@ import org.lwjgl.opengl.GL;
 
 import org.martinez.Array;
 import org.martinez.backend.Board;
+import org.martinez.backend.BoardTwo;
 import org.martinez.cameras.Camera;
 import org.martinez.listeners.KeyboardListener;
 import org.martinez.listeners.MouseListener;
@@ -47,7 +48,7 @@ public class RenderEngine{
     private ShaderObject so;
     private FloatBuffer floatBuffer;
     private XYMouseListener mouseListener;
-    private Board board;
+    private BoardTwo board;
     private float radius = Spot.RADIUS;
     private int colorStride;
     private int attributePointer2;
@@ -59,7 +60,7 @@ public class RenderEngine{
     private float padding;
     private boolean firstRender = true;
     // constructors
-    public RenderEngine(WindowManager manager, ShaderObject so, Camera camera, XYMouseListener mouseListener, Board board){
+    public RenderEngine(WindowManager manager, ShaderObject so, Camera camera, XYMouseListener mouseListener, BoardTwo board){
         this.so = so;
         this.camera = camera;
         this.manager = manager;
@@ -110,7 +111,6 @@ public class RenderEngine{
 
     public void render(int framedelay) {
         //Random random = new Random();
-        int[][] gameBoard = this.board.getGameboard();
         Vector4f COLOR_FACTOR = new Vector4f(0.4f, 0.2f, 0.6f, 1.0f);
         so.loadMatrix4f("uProjMatrix", this.camera.getprojectionMatrix());
         so.loadMatrix4f("uViewMatrix", this.camera.getViewingMatrix());
@@ -126,7 +126,7 @@ public class RenderEngine{
             glClear(GL_COLOR_BUFFER_BIT);
             int clickedRow, clickedColumn; // get mouse click row, column // todo clean up: first padding should be refactored to an "offset" variable
             if(XYMouseListener.mouseButtonDown(GLFW_MOUSE_BUTTON_1)){
-
+                // todo ensure mouse click position detection works
                 clickedRow = (int) ( ((Math.floor( (XYMouseListener.getX() - padding))   /  square_length + padding) % rows));
                 clickedColumn = (int)( (Math.floor( XYMouseListener.getY() - padding) /  square_length + padding) % columns );
                 XYMouseListener.mouseButtonDownReset(GLFW_MOUSE_BUTTON_1);
@@ -141,10 +141,10 @@ public class RenderEngine{
                     continue;
                 // process mouse click
 
-                if(this.board.getState(clickedRow, clickedColumn) == Spot.UNDISCOVERED){ // switch texture
-                    this.board.setState(clickedRow, clickedColumn, Spot.DISCOVERED);
+                if(board.getCellStatus(clickedRow, clickedColumn) == Spot.CELL_STATUS.NOT_EXPOSED){ // switch texture
+                    board.changeCellStatus(clickedRow, clickedColumn);
                 }
-
+                // print board update
             }
 
             // resolve correct texture

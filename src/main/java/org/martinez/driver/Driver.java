@@ -1,6 +1,7 @@
 package org.martinez.driver;
 
 import org.martinez.backend.Board;
+import org.martinez.backend.BoardTwo;
 import org.martinez.cameras.Camera;
 import org.martinez.listeners.XYMouseListener;
 import org.martinez.managers.WindowManager;
@@ -15,7 +16,7 @@ public class Driver {
         System.out.println("starting");
         WindowManager manager = WindowManager.getInstance();
         Camera camera = new Camera();
-        Board board = new Board(new Random());
+        BoardTwo board = new BoardTwo(Spot.ROWS, Spot.COLUMNS, Spot.NUMMINES);
         XYMouseListener listener = XYMouseListener.getInstance();
         ShaderObject shaderObject = new ShaderObject("vs_texture_1.glsl",
                 "fs_texture_1.glsl");

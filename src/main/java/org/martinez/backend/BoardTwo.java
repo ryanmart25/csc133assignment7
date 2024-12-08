@@ -16,6 +16,7 @@ public class BoardTwo {
         this.ROWS = rows;
         this.COLUMNs = columns;
         this.NUMMINES = nummines;
+        this.gameActive = true;
         board = new CellData[ROWS][COLUMNs];
         ArrayList<CellData> list = new ArrayList<>(ROWS * COLUMNs);
         int placedMines = 0;
@@ -33,7 +34,7 @@ public class BoardTwo {
         Collections.shuffle(list);
         // delinearize into array
         for (int index = 0; index < ROWS * COLUMNs; index++) {
-            board[(int) (index / COLUMNs)][(int) (index % COLUMNs)] = list.get(index);
+            board[index / COLUMNs][index % COLUMNs] = list.get(index);
         }
     }
 
