@@ -8,9 +8,11 @@ public class Spot {
     public static final int FRAME_DELAY = 200;
     public static int win_width = 800;
     public static int win_height = 800;
-    public static final int ROWS = 1; public static final int COLUMNS = 1;
+    public static final int ROWS = 5; public static final int COLUMNS = 5;
     public static float RADIUS = 0.5f;
     public static final int MINE = 2, GOLD = 1, UNDISCOVERED = 0, DISCOVERED = 1;
     public static final int NUMMINES = 14;
+    public enum CELL_STATUS {NOT_EXPOSED, EXPOSED };
+    public enum CELL_TYPE {MINE, GOLD};
 
 }

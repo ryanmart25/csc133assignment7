@@ -115,9 +115,9 @@ public class RenderEngine{
         so.loadMatrix4f("uProjMatrix", this.camera.getprojectionMatrix());
         so.loadMatrix4f("uViewMatrix", this.camera.getViewingMatrix());
         // initialize texture objects
-        XYTextureObject undiscoveredTextureObject = new XYTextureObject("C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\textures\\multicolortexture.png"); // todo resolve filepath
-        //XYTextureObject mineTextureObject = new XYTextureObject("C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\textures\\Bunny_2.PNG");
-        //XYTextureObject goldTextureObject = new XYTextureObject("C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\textures\\BunnyB_1.PNG");
+        XYTextureObject undiscoveredTextureObject = new XYTextureObject("C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\textures\\base.png"); // todo resolve filepath
+        XYTextureObject mineTextureObject = new XYTextureObject("C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\textures\\explosion.JPG");
+        XYTextureObject goldTextureObject = new XYTextureObject("C:\\Users\\timef\\Documents\\Workspaces\\Java\\CSC133Assignment7\\src\\main\\resources\\textures\\ShiningDiamond_1.PNG");
        // undiscoveredTextureObject.bind_texture();
         while(!manager.isGlfwWindowClosed()){
 
@@ -151,7 +151,7 @@ public class RenderEngine{
             // if the tile is undiscovered
             // rendering
             // render undiscovered tiles first
-          //  undiscoveredTextureObject.loadImageToTexture();
+            undiscoveredTextureObject.loadImageToTexture();
             for (int row = 0; row < rows; row++) {
                 for (int column = 0; column < columns; column++) {
                     if(this.board.getState(row, column) == Spot.UNDISCOVERED){ // if a tile is undiscovered, render it
@@ -161,7 +161,7 @@ public class RenderEngine{
                 }
             }
             // render mines second
-            //mineTextureObject.loadImageToTexture();
+            mineTextureObject.loadImageToTexture();
             for (int row = 0; row < rows; row++) {
                 for (int column = 0; column < columns; column++) {
                     if(this.board.getTileType(row, column) == Spot.MINE){ // if a tile is a mine, render it
@@ -171,7 +171,7 @@ public class RenderEngine{
                 }
             }
             // render gold next
-            //goldTextureObject.loadImageToTexture();
+            goldTextureObject.loadImageToTexture();
             for (int row = 0; row < rows; row++) {
                 for (int column = 0; column < columns; column++) {
                     if(this.board.getTileType(row, column) == Spot.GOLD){ // if a tile is gold, render it
@@ -241,7 +241,7 @@ public class RenderEngine{
                         // top left
                         x , y + square_length, z,                   0.0f,1.0f,
                         // bottom left
-                        x , y , z,                                   0.0f, 1.0f
+                        x , y , z,                                   0.0f, 0.0f
 
                         // top left
                         // x, y + square_length, z,

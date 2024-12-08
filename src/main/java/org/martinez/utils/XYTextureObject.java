@@ -11,8 +11,7 @@ import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL11.GL_CLAMP;
 import static org.lwjgl.opengl.GL11C.*;
-import static org.lwjgl.stb.STBImage.stbi_image_free;
-import static org.lwjgl.stb.STBImage.stbi_load;
+import static org.lwjgl.stb.STBImage.*;
 
 public class XYTextureObject {
     private String texFilepath;
@@ -59,7 +58,7 @@ public class XYTextureObject {
         IntBuffer texWidth    = BufferUtils.createIntBuffer(1);
         IntBuffer texHeight   = BufferUtils.createIntBuffer(1);
         IntBuffer texChannels = BufferUtils.createIntBuffer(1);
-
+        stbi_set_flip_vertically_on_load(true);
         texImage = stbi_load(texFilepath, texWidth, texHeight, texChannels, 0);
         if (texImage != null) {
             if (texChannels.get(0) == 4 ) {
