@@ -34,7 +34,6 @@ public class Board {
         initializeGameBoard();
         initializeScoreBoard();
         initializeStateBoard();
-
     }
     public void adjustScore(int row, int column){
         this.score += scoreboard[row][column];

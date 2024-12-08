@@ -3,7 +3,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.joml.Vector4f;
-import org.martinez.utils.Spot;
+import org.martinez.utils.SpotTwo;
 
 public class Camera {
 
@@ -13,7 +13,7 @@ public class Camera {
     public Matrix4f getprojectionMatrix(){
         Matrix4f projmatrix = new Matrix4f();
         projmatrix.identity();
-        projmatrix.ortho(0.0f, (float)Spot.win_width, 0.0f, (float)Spot.win_height, 0.0f, 100.0f);
+        projmatrix.ortho(0.0f, (float)SpotTwo.win_width, 0.0f, (float)SpotTwo.win_height, 0.0f, 100.0f);
         return projmatrix;
     }
     public Matrix4f getViewingMatrix(){

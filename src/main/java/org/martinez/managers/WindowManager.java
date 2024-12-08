@@ -6,21 +6,22 @@ import org.lwjgl.opengl.GL;
 import org.martinez.listeners.KeyboardListener;
 import org.martinez.listeners.MouseListener;
 import org.martinez.listeners.XYMouseListener;
-import org.martinez.utils.Spot;
+import org.martinez.utils.SpotTwo;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
-import static org.martinez.utils.Spot.win_height;
-import static org.martinez.utils.Spot.win_width;
+import static org.martinez.utils.SpotTwo.win_height;
+import static org.martinez.utils.SpotTwo.win_width;
 
 public class WindowManager { // singleton
     //fields
     private static WindowManager instance = null;
     private long handle = -1;
+    public float aspectRatio;
     //constructors
     private WindowManager(){
-       initGLFWWindow(win_width, win_height, Spot.TITLE);
+       initGLFWWindow(win_width, win_height, SpotTwo.WINDOW_TITLE);
        initOpenGL();
     }
     //methods
@@ -50,9 +51,8 @@ public class WindowManager { // singleton
     // public void enableResizeWindowCallback(...)
     private void initOpenGL(){
         makeContextCurrent();
-
         GL.createCapabilities();
-        glEnable(GL_TEXTURE_2D);
+        //glEnable(GL_TEXTURE_2D);
         setCallKeyBacks();
         setMouseCallbacks();
         float CC_RED = 1.0f, CC_GREEN = 0.0f, CC_BLUE = 0.0f, CC_ALPHA = 1.0f;
@@ -101,7 +101,7 @@ public class WindowManager { // singleton
                 @Override
                 public void invoke(long window, int width, int height){
                     glViewport(0,0,width, height);
-
+                    WindowManager.getInstance().aspectRatio = (float) (width / height);
                 }
             };
     // register callbacks
